@@ -494,6 +494,7 @@ function poserQuestion() {
 
 function analyserQuestion(q) {
     const totalFN = donnees.reduce((s,d) => s + (d.fn||0), 0);
+    const totalFD = donnees.reduce((s,d) => s + (d.fd||0), 0);
     const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
     const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
     const trieFN = [...donnees].sort((a,b) => (b.fn||0) - (a.fn||0));
@@ -506,64 +507,143 @@ function analyserQuestion(q) {
     const fnTransmis = donnees.reduce((s,d) => s + (d.fnTransmis||0), 0);
     const marquesTransmis = donnees.reduce((s,d) => s + (d.marquesTransmis||0), 0);
     const loyersTransmis = donnees.reduce((s,d) => s + (d.loyersTransmis||0), 0);
+    const totalAmis = donnees.reduce((s,d) => s + (d.amis||0), 0);
+    const thesauriseurs = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
 
-    // Diagnostic complet
+    // DIAGNOSTIC COMPLET
     if (q.includes('diagnostic') || q.includes('analyse complète') || q.includes('rapport complet')) {
-        let rep = `📊 <b>DIAGNOSTIC COMPLET</b><br><br>`;
+        let rep = `📊 <b>DIAGNOSTIC COMPLET — ASN BAHÁ'Í RDC</b><br><br>`;
         rep += `💰 <b>Fonds National :</b> ${totalFN.toLocaleString()} USD collectés<br>`;
-        rep += `📤 FN Transmis : ${fnTransmis.toLocaleString()} USD (${getTaux(fnTransmis, totalFN*0.20)}% des 20% attendus)<br>`;
+        rep += `📤 FN Transmis (20%) : ${fnTransmis.toLocaleString()} USD (${getTaux(fnTransmis, totalFN*0.20)}% de l'objectif)<br>`;
         rep += `💎 Fonds Marqués : ${totalMarques.toLocaleString()} USD | Transmis : ${marquesTransmis.toLocaleString()} USD (${getTaux(marquesTransmis, totalMarques)}%)<br>`;
         rep += `🏠 Loyers : ${totalLoyers.toLocaleString()} USD | Transmis : ${loyersTransmis.toLocaleString()} USD (${getTaux(loyersTransmis, totalLoyers)}%)<br>`;
-        rep += `👥 ${nbReponses}/11 structures ont répondu<br>`;
+        rep += `💵 Fonds Délégation : ${totalFD.toLocaleString()} USD (dépensé localement)<br>`;
+        rep += `👥 Amis Contributeurs : ${totalAmis}<br>`;
         rep += `🏛️ ASL : ${totalASL} total, ${totalASLActives} actives (${getTaux(totalASLActives,totalASL)}%), ${totalASL-totalASLActives} inactives<br>`;
         rep += `🏘️ Groupements : ${totalGrp} total, ${totalGrpActifs} actifs (${getTaux(totalGrpActifs,totalGrp)}%), ${totalGrp-totalGrpActifs} inactifs<br>`;
-        if (nonSoumis.length > 0) rep += `<br>🔴 <b>ALERTE :</b> ${nonSoumis.length} structure(s) non soumis : ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
-        const thes = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
-        if (thes.length > 0) rep += `🔴 <b>THÉSAURISATION :</b> ${thes.map(d=>d.region).join(', ')}<br>`;
-        rep += `<br>💡 <b>DÉCISION RECOMMANDÉE :</b> ${nonSoumis.length > 0 ? 'Contacter les structures non soumises en priorité. ' : ''}${thes.length > 0 ? 'Envoyer une équipe pour résoudre la thésaurisation.' : 'Continuer le suivi mensuel.'}`;
+        rep += `📊 ${nbReponses}/11 structures ont répondu<br>`;
+        if (nonSoumis.length > 0) rep += `<br>🔴 <b>ALERTE :</b> ${nonSoumis.length} non soumis : ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
+        if (thesauriseurs.length > 0) rep += `🔴 <b>THÉSAURISATION :</b> ${thesauriseurs.map(d=>d.region).join(', ')}<br>`;
+        rep += `<br>💡 <b>DÉCISION :</b> ${nonSoumis.length > 0 ? 'Contacter les non soumis. ' : ''}${thesauriseurs.length > 0 ? 'Auditer la thésaurisation.' : 'Continuer le suivi.'}`;
         return rep;
     }
 
-    // Qui a besoin d'aide ?
+    // PLAN D'ACTION
+    if (q.includes('plan d\'action') || q.includes('cette semaine') || q.includes('quoi faire') || q.includes('action')) {
+        let plan = `📋 <b>PLAN D'ACTION — ASN</b><br><br>`;
+        plan += `🔴 <b>URGENT (cette semaine) :</b><br>`;
+        if (nonSoumis.length > 0) plan += `• 📞 Contacter ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
+        else plan += `• ✅ Toutes les structures ont soumis<br>`;
+        if (thesauriseurs.length > 0) plan += `• 🚨 Auditer ${thesauriseurs.map(d=>d.region).join(', ')} (thésaurisation)<br>`;
+        plan += `<br>🟡 <b>IMPORTANT (ce mois) :</b><br>`;
+        plan += `• 📊 Envoyer le rapport à l'Assemblée Nationale<br>`;
+        plan += `• 📞 Suivre les ASL inactives (${totalASL-totalASLActives} au total)<br>`;
+        plan += `<br>🟢 <b>FOND (trimestre) :</b><br>`;
+        plan += `• 📈 Analyser les tendances sur 3 mois<br>`;
+        plan += `• 🎓 Former les trésoriers sur la transmission<br>`;
+        return plan;
+    }
+
+    // COMPARAISON
+    if (q.includes('compare') || q.includes('vs') || q.includes('versus')) {
+        let r1='', r2='';
+        for (const d of donnees) {
+            const dn = d.region.toLowerCase();
+            if (!r1 && q.includes(dn.substring(0,5))) r1 = d.region;
+            else if (r1 && !r2 && q.includes(dn.substring(0,5))) r2 = d.region;
+        }
+        if (!r1) r1 = trieFN[0]?.region || '';
+        if (!r2) r2 = trieFN[1]?.region || '';
+        const d1 = donnees.find(d => d.region === r1) || {};
+        const d2 = donnees.find(d => d.region === r2) || {};
+        const m1 = (d1.temples||0)+(d1.international||0)+(d1.continental||0)+(d1.mausolee||0)+(d1.socioEco||0);
+        const m2 = (d2.temples||0)+(d2.international||0)+(d2.continental||0)+(d2.mausolee||0)+(d2.socioEco||0);
+        return `⚖️ <b>${r1} VS ${r2}</b><br>
+        💰 FN : ${(d1.fn||0).toLocaleString()} vs ${(d2.fn||0).toLocaleString()} USD<br>
+        💵 FD : ${(d1.fd||0).toLocaleString()} vs ${(d2.fd||0).toLocaleString()} USD<br>
+        💎 Marqués : ${m1.toLocaleString()} vs ${m2.toLocaleString()} USD<br>
+        🏛️ ASL Actives : ${d1.aslActives||0}/${d1.totalAsl||0} vs ${d2.aslActives||0}/${d2.totalAsl||0}<br>
+        🏘️ Group. Actifs : ${d1.grpActifs||0}/${d1.totalGroupements||0} vs ${d2.grpActifs||0}/${d2.totalGroupements||0}<br>
+        📤 Transmission FN : ${getTaux(d1.fnTransmis||0,(d1.fn||0)*0.20)}% vs ${getTaux(d2.fnTransmis||0,(d2.fn||0)*0.20)}%`;
+    }
+
+    // MEILLEUR TAUX
+    if (q.includes('meilleur taux') || q.includes('meilleure transmission') || q.includes('classement transmission')) {
+        const trie = [...donnees].sort((a,b) => getTaux(b.fnTransmis||0, (b.fn||0)*0.20) - getTaux(a.fnTransmis||0, (a.fn||0)*0.20));
+        return `🏆 <b>CLASSEMENT — TAUX TRANSMISSION FN</b><br>${trie.map((d,i) => `${i+1}. ${d.region} : ${getTaux(d.fnTransmis||0, (d.fn||0)*0.20)}%`).join('<br>')}`;
+    }
+
+    // RAPPORT EXÉCUTIF
+    if (q.includes('rapport') || q.includes('exécutif') || q.includes('assemblée')) {
+        return `📄 <b>RAPPORT EXÉCUTIF — ASSEMBLÉE NATIONALE</b><br><br>
+        <b>1. COLLECTE :</b> ${nbReponses}/11 structures ont répondu. FN=${totalFN.toLocaleString()} USD.<br>
+        <b>2. TRANSMISSION :</b> ${getTaux(fnTransmis, totalFN*0.20)}% du FN transmis. ${thesauriseurs.length} thésaurisation(s).<br>
+        <b>3. STRUCTURES :</b> ${totalASL} ASL (${totalASLActives} actives). ${totalGrp} group. (${totalGrpActifs} actifs).<br>
+        <b>4. DÉCISION :</b> ${nonSoumis.length > 0 ? 'Relancer ' + nonSoumis.length + ' structures.' : 'Poursuivre le suivi mensuel.'}`;
+    }
+
+    // QUI A BESOIN D'AIDE
     if (q.includes('besoin d\'aide') || q.includes('aider') || q.includes('prioritaire') || q.includes('urgence')) {
-        let rep = `🚨 <b>STRUCTURES NÉCESSITANT UNE INTERVENTION</b><br><br>`;
+        let rep = `🚨 <b>STRUCTURES À ACCOMPAGNER</b><br><br>`;
         if (nonSoumis.length > 0) rep += `📞 <b>Non soumis (${nonSoumis.length}) :</b> ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
-        const thes = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
-        if (thes.length > 0) rep += `🚨 <b>Thésaurisation (${thes.length}) :</b> ${thes.map(d=>d.region).join(', ')}<br>`;
-        if (nonSoumis.length === 0 && thes.length === 0) rep += `✅ Aucune structure en difficulté critique.`;
+        if (thesauriseurs.length > 0) rep += `🚨 <b>Thésaurisation (${thesauriseurs.length}) :</b> ${thesauriseurs.map(d=>d.region).join(', ')}<br>`;
+        const inactifs = donnees.filter(d => (d.totalAsl||0) > 0 && (d.aslActives||0) === 0);
+        if (inactifs.length > 0) rep += `⚠️ <b>Zéro ASL active :</b> ${inactifs.map(d=>d.region).join(', ')}<br>`;
+        if (nonSoumis.length === 0 && thesauriseurs.length === 0 && inactifs.length === 0) rep += `✅ Aucune structure en difficulté.`;
         return rep;
     }
 
-    // Analyse thésaurisation
+    // THÉSAURISATION
     if (q.includes('thésaurisation') || q.includes('thesaurisation')) {
-        let rep = `⚠️ <b>ANALYSE DE LA THÉSAURISATION</b><br><br>`;
+        let rep = `⚠️ <b>ANALYSE THÉSAURISATION</b><br><br>`;
         donnees.forEach(d => {
             const taux = getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1));
-            if (taux > 0) rep += `• ${d.region} : ${taux}%<br>`;
+            if (taux > 0) rep += `• ${d.region} : ${taux}% ${taux>50?'🔴':taux>20?'🟠':'🟡'}<br>`;
         });
-        if (rep === `⚠️ <b>ANALYSE DE LA THÉSAURISATION</b><br><br>`) rep += `✅ Aucune thésaurisation détectée.`;
+        if (rep === `⚠️ <b>ANALYSE THÉSAURISATION</b><br><br>`) rep += `✅ Aucune thésaurisation.`;
         return rep;
     }
 
-    // Top FN
-    if (q.includes('top') || q.includes('meilleur') || q.includes('plus de fn')) {
-        const top = trieFN.slice(0,5);
-        return `🏆 <b>TOP 5 FONDS NATIONAL</b><br>${top.map((d,i) => `${i+1}. ${d.region} : ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
+    // TOP 5
+    if (q.includes('top') || q.includes('meilleur') || q.includes('plus de fn') || q.includes('classement fn')) {
+        return `🏆 <b>TOP 5 — FONDS NATIONAL</b><br>${trieFN.slice(0,5).map((d,i) => `${i+1}. ${d.region} : ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
     }
 
-    // Structure spécifique
+    // STRUCTURE SPÉCIFIQUE
     for (const d of donnees) {
         if (q.includes(d.region.toLowerCase())) {
             const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
-            return `📊 <b>${d.region}</b><br>💰 FN=${(d.fn||0).toLocaleString()} USD | FD=${(d.fd||0).toLocaleString()} USD<br>💎 Marqués=${marques.toLocaleString()} USD | 🏠 Loyers=${(d.loyers||0).toLocaleString()} USD<br>📤 FN→BN=${(d.fnTransmis||0).toLocaleString()} | Marq→BN=${(d.marquesTransmis||0).toLocaleString()} | Loy→BN=${(d.loyersTransmis||0).toLocaleString()}<br>🏛️ ASL=${d.totalAsl||0} (Actives:${d.aslActives||0}) | 🏘️ Group.=${d.totalGroupements||0} (Actifs:${d.grpActifs||0})`;
+            return `📊 <b>${d.region}</b><br>
+            💰 FN=${(d.fn||0).toLocaleString()} USD | FD=${(d.fd||0).toLocaleString()} USD<br>
+            💎 Marqués=${marques.toLocaleString()} | 🏠 Loyers=${(d.loyers||0).toLocaleString()}<br>
+            📤 FN→BN=${(d.fnTransmis||0).toLocaleString()} (${getTaux(d.fnTransmis||0,(d.fn||0)*0.20)}%) | Marq→BN=${(d.marquesTransmis||0).toLocaleString()} | Loy→BN=${(d.loyersTransmis||0).toLocaleString()}<br>
+            🏛️ ASL=${d.totalAsl||0} (Act:${d.aslActives||0}) | 🏘️ Grp=${d.totalGroupements||0} (Act:${d.grpActifs||0})<br>
+            👥 Amis=${d.amis||0} | ⚠️ Thésaurisation=${getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1))}%`;
         }
     }
 
-    // Résumé
+    // RÉSUMÉ
     if (q.includes('résumé') || q.includes('resume') || q.includes('global') || q.includes('combien')) {
-        return `📊 <b>RÉSUMÉ</b> : ${nbReponses}/11 structures ont répondu. FN=${totalFN.toLocaleString()} USD. ASL=${totalASL} (${totalASLActives} actives). Group.=${totalGrp} (${totalGrpActifs} actifs). ${nonSoumis.length} non soumis.`;
+        return `📊 <b>RÉSUMÉ</b> : ${nbReponses}/11 répondu. FN=${totalFN.toLocaleString()} USD. ASL=${totalASL} (${totalASLActives} act.). Group.=${totalGrp} (${totalGrpActifs} act.). ${nonSoumis.length} non soumis. ${thesauriseurs.length} thésaurisation.`;
     }
 
+    // AIDE
+    return `💡 <b>Je peux vous aider avec :</b><br>
+    📊 "Diagnostic complet" — Tous les indicateurs<br>
+    🚨 "Qui a besoin d'aide ?" — Structures prioritaires<br>
+    ⚠️ "Analyse la thésaurisation" — Par structure<br>
+    📋 "Plan d'action" — Quoi faire cette semaine<br>
+    ⚖️ "Compare CRB Katanga et CRB Ouest" — Comparaison<br>
+    🏆 "Top 5 FN" ou "Meilleur taux" — Classements<br>
+    📄 "Rapport exécutif" — Pour l'Assemblée<br>
+    🏛️ "Parle-moi du Bureau National" — Détail structure`;
+}
+    // QUI A ENVOYÉ
+    if (q.includes('qui a envoyé') || q.includes('qui a soumis') || q.includes('qui a rempli')) {
+        const soumis = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0);
+        if (soumis.length === 0) return `📊 Aucune structure n'a encore envoyé de données ce mois-ci.`;
+        return `✅ <b>${soumis.length}/11 structures ont soumis :</b><br>${soumis.map(d => `• ${d.region} (FN: ${(d.fn||0).toLocaleString()} USD)`).join('<br>')}`;
+    }
     return `💡 Je peux répondre à : "Fais un diagnostic complet", "Qui a besoin d'aide ?", "Analyse la thésaurisation", "Top 5 FN", "Parle-moi du CRB Katanga", "Résumé". Essayez !`;
 }
 </script>
