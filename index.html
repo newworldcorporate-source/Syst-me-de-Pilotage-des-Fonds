@@ -44,7 +44,6 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.75em; }
         th { background: #1a237e; color: white; padding: 10px 6px; text-align: center; font-size: 0.7em; }
         td { padding: 7px 6px; border-bottom: 1px solid #eee; text-align: center; }
-        .highlight { background: #e8f5e9; font-weight: bold; }
         
         .statut-red { background: #d32f2f; color: white; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 0.75em; animation: blink 1.5s infinite; }
         .statut-orange { background: #ff6d00; color: white; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 0.75em; }
@@ -72,7 +71,7 @@
         .success-msg { display: none; background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px; }
         .sync-msg { display: none; background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
         
-        @media print { .header, .input-section, .btn, .btn-logout, .btn-pdf, .btn-sync, .btn-reset, .alert-box { display: none !important; } .dashboard { display: block !important; } body { background: white; } .card { box-shadow: none; border: 1px solid #ddd; } }
+        @media print { .header, .input-section, .btn, .btn-logout, .btn-pdf, .btn-sync, .btn-reset, .alert-box, #btnAssistant, #assistantBox { display: none !important; } .dashboard { display: block !important; } body { background: white; } .card { box-shadow: none; border: 1px solid #ddd; } }
         @media (max-width: 768px) { .cards { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
     </style>
 </head>
@@ -137,7 +136,6 @@
                 <div class="card red"><div class="value" id="totalGrpInactifs">0</div><div class="label">Group. Inactifs</div></div>
             </div>
             
-            <!-- TRANSMISSION AU BN -->
             <div class="section-title">🔄 TRANSMISSION AU BUREAU NATIONAL</div>
             <div class="cards">
                 <div class="card blue"><div class="value" id="fnTransmis">0</div><div class="label">FN Transmis (20%)</div></div>
@@ -150,7 +148,6 @@
                 <div class="card green"><div class="value" id="totalAmis">0</div><div class="label">👥 Amis Contributeurs</div></div>
             </div>
             
-            <!-- DÉTAIL PAR STRUCTURE -->
             <div class="section-title">📋 DÉTAIL PAR STRUCTURE</div>
             <div class="box"><table><thead><tr>
                 <th>Structure</th><th>FN</th><th>FD</th><th>Marqués</th><th>Loyers</th><th>Total ASL</th><th>ASL Act.</th><th>ASL Inact.</th><th>Total Grp</th><th>Grp Act.</th><th>Grp Inact.</th><th>FN→BN</th><th>Marq→BN</th><th>Loy→BN</th><th>Thésaur.</th>
@@ -163,7 +160,7 @@
             <div class="recommandations"><div id="decisionsContent"></div></div>
         </div>
         
-        <!-- ========== VUE CRB ========== -->
+        <!-- ========== VUE CRB/BN ========== -->
         <div id="vueCRB" style="display:none;">
             <div class="section-title">📊 VOS EFFECTIFS</div>
             <div class="cards">
@@ -187,8 +184,8 @@
             <div class="cards">
                 <div class="card blue"><div class="value" id="monFnTransmis">0</div><div class="label">FN Transmis (20%)</div></div>
                 <div class="card orange"><div class="value" id="monTauxFn">0%</div><div class="label">Taux Trans. FN</div></div>
-                <div class="card purple"><div class="value" id="monMarquesTransmis">0</div><div class="label">Marqués Transmis (100%)</div></div>
-                <div class="card green"><div class="value" id="monLoyersTransmis">0</div><div class="label">Loyers Transmis (100%)</div></div>
+                <div class="card purple"><div class="value" id="monMarquesTransmis">0</div><div class="label">Marqués Transmis</div></div>
+                <div class="card green"><div class="value" id="monLoyersTransmis">0</div><div class="label">Loyers Transmis</div></div>
                 <div class="card red"><div class="value" id="monThesaurisation">0%</div><div class="label">⚠️ Thésaurisation</div></div>
             </div>
             
@@ -199,68 +196,86 @@
                 <div class="card purple"><div class="value" id="monMontantASL">0</div><div class="label">Montant des ASL</div></div>
                 <div class="card orange"><div class="value" id="monMontantGrp">0</div><div class="label">Montant des Group.</div></div>
             </div>
-        </div>
-        
-        <!-- ========== FORMULAIRE ========== -->
-        <div class="input-section">
-            <h2>📝 SAISIE MENSUELLE</h2>
             
-            <div class="section-title" style="margin-top:0;">📊 EFFECTIFS</div>
-            <div class="form-row">
-                <div class="form-group"><label>Exercice</label><input type="number" id="exercice" value="183"></div>
-                <div class="form-group"><label>Mois</label><select id="mois"><option>Janvier</option><option>Février</option><option>Mars</option><option>Avril</option><option>Mai</option><option selected>Juin</option><option>Juillet</option><option>Août</option><option>Septembre</option><option>Octobre</option><option>Novembre</option><option>Décembre</option></select></div>
-                <div class="form-group"><label>Nombre Total d'ASL</label><input type="number" id="totalAslInput" value="0"></div>
+            <!-- FORMULAIRE (visible uniquement pour CRB/BN) -->
+            <div class="input-section" id="formulaireSection">
+                <h2>📝 SAISIE MENSUELLE</h2>
+                <div class="section-title" style="margin-top:0;">📊 EFFECTIFS</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Exercice</label><input type="number" id="exercice" value="183"></div>
+                    <div class="form-group"><label>Mois</label><select id="mois"><option>Janvier</option><option>Février</option><option>Mars</option><option>Avril</option><option>Mai</option><option selected>Juin</option><option>Juillet</option><option>Août</option><option>Septembre</option><option>Octobre</option><option>Novembre</option><option>Décembre</option></select></div>
+                    <div class="form-group"><label>Nombre Total d'ASL</label><input type="number" id="totalAslInput" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>ASL Actives (ont collecté)</label><input type="number" id="aslActivesInput" value="0"></div>
+                    <div class="form-group"><label>Nombre Total de Groupements</label><input type="number" id="totalGroupementsInput" value="0"></div>
+                    <div class="form-group"><label>Groupements Actifs (ont reçu)</label><input type="number" id="grpActifsInput" value="0"></div>
+                </div>
+                
+                <div class="section-title">💰 FONDS COLLECTÉS</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Fonds National (USD)</label><input type="number" id="fnInput" value="0"></div>
+                    <div class="form-group"><label>Fonds Délégation (USD)</label><input type="number" id="fdInput" value="0"></div>
+                    <div class="form-group"><label>Loyers (USD)</label><input type="number" id="loyersInput" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Fonds Temples (USD)</label><input type="number" id="templesInput" value="0"></div>
+                    <div class="form-group"><label>Fonds International (USD)</label><input type="number" id="internationalInput" value="0"></div>
+                    <div class="form-group"><label>Fonds Continental (USD)</label><input type="number" id="continentalInput" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Fonds Mausolée (USD)</label><input type="number" id="mausoleeInput" value="0"></div>
+                    <div class="form-group"><label>Fonds Socio-Éco (USD)</label><input type="number" id="socioEcoInput" value="0"></div>
+                </div>
+                
+                <div class="section-title">🔄 FONDS TRANSMIS AU BN</div>
+                <div class="form-row">
+                    <div class="form-group"><label>FN Transmis au BN (20% du FN)</label><input type="number" id="fnTransmisInput" value="0"></div>
+                    <div class="form-group"><label>Fonds Marqués Transmis au BN (100%)</label><input type="number" id="marquesTransmisInput" value="0"></div>
+                    <div class="form-group"><label>Loyers Transmis au BN (100%)</label><input type="number" id="loyersTransmisInput" value="0"></div>
+                </div>
+                
+                <div class="section-title">👥 PROVENANCE</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Amis Contributeurs</label><input type="number" id="amisInput" value="0"></div>
+                    <div class="form-group"><label>Montant reçu des Amis</label><input type="number" id="montantAmisInput" value="0"></div>
+                    <div class="form-group"><label>Montant reçu des ASL</label><input type="number" id="montantAslInput" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Montant reçu des Group.</label><input type="number" id="montantGrpInput" value="0"></div>
+                    <div class="form-group"><label>Actions Sensibilisation</label><input type="number" id="actionsInput" value="0"></div>
+                </div>
+                
+                <div class="section-title">⚠️ DIFFICULTÉS</div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: span 3;"><label>Difficultés rencontrées</label><input type="text" id="difficultesInput" placeholder="Décrivez les obstacles..."></div>
+                </div>
+                
+                <button class="btn-submit" onclick="soumettreDonnees()">📤 ENVOYER</button>
+                <div class="success-msg" id="successMsg">✅ Rapport enregistré !</div>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label>ASL Actives (ont collecté)</label><input type="number" id="aslActivesInput" value="0"></div>
-                <div class="form-group"><label>Nombre Total de Groupements</label><input type="number" id="totalGroupementsInput" value="0"></div>
-                <div class="form-group"><label>Groupements Actifs (ont reçu)</label><input type="number" id="grpActifsInput" value="0"></div>
-            </div>
-            
-            <div class="section-title">💰 FONDS COLLECTÉS</div>
-            <div class="form-row">
-                <div class="form-group"><label>Fonds National (USD)</label><input type="number" id="fnInput" value="0"></div>
-                <div class="form-group"><label>Fonds Délégation (USD)</label><input type="number" id="fdInput" value="0"></div>
-                <div class="form-group"><label>Loyers (USD)</label><input type="number" id="loyersInput" value="0"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Fonds Temples (USD)</label><input type="number" id="templesInput" value="0"></div>
-                <div class="form-group"><label>Fonds International (USD)</label><input type="number" id="internationalInput" value="0"></div>
-                <div class="form-group"><label>Fonds Continental (USD)</label><input type="number" id="continentalInput" value="0"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Fonds Mausolée (USD)</label><input type="number" id="mausoleeInput" value="0"></div>
-                <div class="form-group"><label>Fonds Socio-Éco (USD)</label><input type="number" id="socioEcoInput" value="0"></div>
-            </div>
-            
-            <div class="section-title">🔄 FONDS TRANSMIS AU BUREAU NATIONAL</div>
-            <div class="form-row">
-                <div class="form-group"><label>FN Transmis au BN (20% du FN)</label><input type="number" id="fnTransmisInput" value="0"></div>
-                <div class="form-group"><label>Total Fonds Marqués Transmis au BN</label><input type="number" id="marquesTransmisInput" value="0"></div>
-                <div class="form-group"><label>Loyers Transmis au BN</label><input type="number" id="loyersTransmisInput" value="0"></div>
-            </div>
-            
-            <div class="section-title">👥 PROVENANCE DES FONDS</div>
-            <div class="form-row">
-                <div class="form-group"><label>Amis Contributeurs</label><input type="number" id="amisInput" value="0"></div>
-                <div class="form-group"><label>Montant reçu des Amis (USD)</label><input type="number" id="montantAmisInput" value="0"></div>
-                <div class="form-group"><label>Montant reçu des ASL (USD)</label><input type="number" id="montantAslInput" value="0"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Montant reçu des Group. (USD)</label><input type="number" id="montantGrpInput" value="0"></div>
-                <div class="form-group"><label>Actions Sensibilisation</label><input type="number" id="actionsInput" value="0"></div>
-            </div>
-            
-            <div class="section-title">⚠️ DIFFICULTÉS</div>
-            <div class="form-row">
-                <div class="form-group" style="grid-column: span 3;"><label>Difficultés rencontrées</label><input type="text" id="difficultesInput" placeholder="Décrivez les obstacles..."></div>
-            </div>
-            
-            <button class="btn-submit" onclick="soumettreDonnees()">📤 ENVOYER LE RAPPORT MENSUEL</button>
-            <div class="success-msg" id="successMsg">✅ Rapport enregistré et synchronisé !</div>
         </div>
     </div>
 </div>
+
+<!-- ========== ASSISTANT IA ========== -->
+<div id="assistantBox" style="position:fixed; bottom:20px; right:20px; width:400px; background:white; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:1000; display:none;">
+    <div style="background:linear-gradient(135deg,#1a237e,#283593); color:white; padding:15px; border-radius:15px 15px 0 0; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold;">🤖 Assistant IA — Analyse & Décisions</span>
+        <button onclick="toggleAssistant()" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:15px; max-height:350px; overflow-y:auto;" id="chatMessages">
+        <div style="background:#f5f5f5; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85em;">
+            👋 Bonjour ! Je suis votre assistant. Je peux analyser les données et vous aider à prendre des décisions. Essayez : "Fais un diagnostic complet", "Qui a besoin d'aide ?", "Analyse la thésaurisation".
+        </div>
+    </div>
+    <div style="padding:10px 15px; border-top:1px solid #eee; display:flex; gap:10px;">
+        <input type="text" id="questionInput" placeholder="Votre question..." style="flex:1; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:0.85em;" onkeypress="if(event.key==='Enter') poserQuestion()">
+        <button onclick="poserQuestion()" style="background:#1a237e; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer;">▶</button>
+    </div>
+</div>
+
+<button id="btnAssistant" onclick="toggleAssistant()" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:linear-gradient(135deg,#1a237e,#283593); color:white; border:none; border-radius:50%; font-size:1.5em; cursor:pointer; box-shadow:0 5px 20px rgba(0,0,0,0.3); z-index:999;">🤖</button>
 
 <script>
 const passwords = {
@@ -366,9 +381,12 @@ function afficher() {
         document.getElementById('difficultesContent').innerHTML = diff.length === 0 ? '<p>Aucune difficulté signalée.</p>' : diff.map(d => `<div class="difficulte-item"><strong>${d.region} :</strong> ${d.difficultes}</div>`).join('');
         
         const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
+        const thesauriseurs = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
         let dec = '';
         if (nonSoumis.length) dec += `<div class="decision-item">📞 Contacter ${nonSoumis.map(d=>d.region).join(', ')}.</div>`;
-        dec += `<div class="decision-item">📊 Présenter ce tableau à l'Assemblée Nationale.</div>`;
+        if (thesauriseurs.length) dec += `<div class="decision-item">🚨 Thésaurisation : ${thesauriseurs.map(d=>d.region).join(', ')}.</div>`;
+        if (diff.length) dec += `<div class="decision-item">⚠️ ${diff.length} structure(s) ont signalé des difficultés.</div>`;
+        dec += `<div class="decision-item">💡 Posez vos questions à l'assistant IA (🤖) pour une analyse détaillée.</div>`;
         document.getElementById('decisionsContent').innerHTML = dec;
     } else {
         const d = donnees.find(x => x.region === currentUser) || {};
@@ -419,8 +437,7 @@ function resetDonnees() {
 
 function soumettreDonnees() {
     const data = {
-        region: currentUser,
-        exercice: parseInt(document.getElementById('exercice').value) || 183,
+        region: currentUser, exercice: parseInt(document.getElementById('exercice').value) || 183,
         mois: document.getElementById('mois').value,
         totalAsl: parseInt(document.getElementById('totalAslInput').value) || 0,
         aslActives: parseInt(document.getElementById('aslActivesInput').value) || 0,
@@ -451,6 +468,103 @@ function soumettreDonnees() {
     setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
     synchroniserGoogleSheets();
     afficher();
+}
+
+// ========== ASSISTANT IA ==========
+function toggleAssistant() {
+    const box = document.getElementById('assistantBox');
+    const btn = document.getElementById('btnAssistant');
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block'; btn.style.display = 'none';
+    } else {
+        box.style.display = 'none'; btn.style.display = 'block';
+    }
+}
+
+function poserQuestion() {
+    const question = document.getElementById('questionInput').value.trim();
+    if (!question) return;
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML += `<div style="background:#e3f2fd; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85em; text-align:right;"><strong>Vous :</strong> ${question}</div>`;
+    const reponse = analyserQuestion(question.toLowerCase());
+    messages.innerHTML += `<div style="background:#f5f5f5; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85em;">🤖 ${reponse}</div>`;
+    document.getElementById('questionInput').value = '';
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function analyserQuestion(q) {
+    const totalFN = donnees.reduce((s,d) => s + (d.fn||0), 0);
+    const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
+    const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
+    const trieFN = [...donnees].sort((a,b) => (b.fn||0) - (a.fn||0));
+    const totalASL = donnees.reduce((s,d) => s + (d.totalAsl||0), 0);
+    const totalASLActives = donnees.reduce((s,d) => s + (d.aslActives||0), 0);
+    const totalGrp = donnees.reduce((s,d) => s + (d.totalGroupements||0), 0);
+    const totalGrpActifs = donnees.reduce((s,d) => s + (d.grpActifs||0), 0);
+    const totalMarques = donnees.reduce((s,d) => s + (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0), 0);
+    const totalLoyers = donnees.reduce((s,d) => s + (d.loyers||0), 0);
+    const fnTransmis = donnees.reduce((s,d) => s + (d.fnTransmis||0), 0);
+    const marquesTransmis = donnees.reduce((s,d) => s + (d.marquesTransmis||0), 0);
+    const loyersTransmis = donnees.reduce((s,d) => s + (d.loyersTransmis||0), 0);
+
+    // Diagnostic complet
+    if (q.includes('diagnostic') || q.includes('analyse complète') || q.includes('rapport complet')) {
+        let rep = `📊 <b>DIAGNOSTIC COMPLET</b><br><br>`;
+        rep += `💰 <b>Fonds National :</b> ${totalFN.toLocaleString()} USD collectés<br>`;
+        rep += `📤 FN Transmis : ${fnTransmis.toLocaleString()} USD (${getTaux(fnTransmis, totalFN*0.20)}% des 20% attendus)<br>`;
+        rep += `💎 Fonds Marqués : ${totalMarques.toLocaleString()} USD | Transmis : ${marquesTransmis.toLocaleString()} USD (${getTaux(marquesTransmis, totalMarques)}%)<br>`;
+        rep += `🏠 Loyers : ${totalLoyers.toLocaleString()} USD | Transmis : ${loyersTransmis.toLocaleString()} USD (${getTaux(loyersTransmis, totalLoyers)}%)<br>`;
+        rep += `👥 ${nbReponses}/11 structures ont répondu<br>`;
+        rep += `🏛️ ASL : ${totalASL} total, ${totalASLActives} actives (${getTaux(totalASLActives,totalASL)}%), ${totalASL-totalASLActives} inactives<br>`;
+        rep += `🏘️ Groupements : ${totalGrp} total, ${totalGrpActifs} actifs (${getTaux(totalGrpActifs,totalGrp)}%), ${totalGrp-totalGrpActifs} inactifs<br>`;
+        if (nonSoumis.length > 0) rep += `<br>🔴 <b>ALERTE :</b> ${nonSoumis.length} structure(s) non soumis : ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
+        const thes = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
+        if (thes.length > 0) rep += `🔴 <b>THÉSAURISATION :</b> ${thes.map(d=>d.region).join(', ')}<br>`;
+        rep += `<br>💡 <b>DÉCISION RECOMMANDÉE :</b> ${nonSoumis.length > 0 ? 'Contacter les structures non soumises en priorité. ' : ''}${thes.length > 0 ? 'Envoyer une équipe pour résoudre la thésaurisation.' : 'Continuer le suivi mensuel.'}`;
+        return rep;
+    }
+
+    // Qui a besoin d'aide ?
+    if (q.includes('besoin d\'aide') || q.includes('aider') || q.includes('prioritaire') || q.includes('urgence')) {
+        let rep = `🚨 <b>STRUCTURES NÉCESSITANT UNE INTERVENTION</b><br><br>`;
+        if (nonSoumis.length > 0) rep += `📞 <b>Non soumis (${nonSoumis.length}) :</b> ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
+        const thes = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
+        if (thes.length > 0) rep += `🚨 <b>Thésaurisation (${thes.length}) :</b> ${thes.map(d=>d.region).join(', ')}<br>`;
+        if (nonSoumis.length === 0 && thes.length === 0) rep += `✅ Aucune structure en difficulté critique.`;
+        return rep;
+    }
+
+    // Analyse thésaurisation
+    if (q.includes('thésaurisation') || q.includes('thesaurisation')) {
+        let rep = `⚠️ <b>ANALYSE DE LA THÉSAURISATION</b><br><br>`;
+        donnees.forEach(d => {
+            const taux = getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1));
+            if (taux > 0) rep += `• ${d.region} : ${taux}%<br>`;
+        });
+        if (rep === `⚠️ <b>ANALYSE DE LA THÉSAURISATION</b><br><br>`) rep += `✅ Aucune thésaurisation détectée.`;
+        return rep;
+    }
+
+    // Top FN
+    if (q.includes('top') || q.includes('meilleur') || q.includes('plus de fn')) {
+        const top = trieFN.slice(0,5);
+        return `🏆 <b>TOP 5 FONDS NATIONAL</b><br>${top.map((d,i) => `${i+1}. ${d.region} : ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
+    }
+
+    // Structure spécifique
+    for (const d of donnees) {
+        if (q.includes(d.region.toLowerCase())) {
+            const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
+            return `📊 <b>${d.region}</b><br>💰 FN=${(d.fn||0).toLocaleString()} USD | FD=${(d.fd||0).toLocaleString()} USD<br>💎 Marqués=${marques.toLocaleString()} USD | 🏠 Loyers=${(d.loyers||0).toLocaleString()} USD<br>📤 FN→BN=${(d.fnTransmis||0).toLocaleString()} | Marq→BN=${(d.marquesTransmis||0).toLocaleString()} | Loy→BN=${(d.loyersTransmis||0).toLocaleString()}<br>🏛️ ASL=${d.totalAsl||0} (Actives:${d.aslActives||0}) | 🏘️ Group.=${d.totalGroupements||0} (Actifs:${d.grpActifs||0})`;
+        }
+    }
+
+    // Résumé
+    if (q.includes('résumé') || q.includes('resume') || q.includes('global') || q.includes('combien')) {
+        return `📊 <b>RÉSUMÉ</b> : ${nbReponses}/11 structures ont répondu. FN=${totalFN.toLocaleString()} USD. ASL=${totalASL} (${totalASLActives} actives). Group.=${totalGrp} (${totalGrpActifs} actifs). ${nonSoumis.length} non soumis.`;
+    }
+
+    return `💡 Je peux répondre à : "Fais un diagnostic complet", "Qui a besoin d'aide ?", "Analyse la thésaurisation", "Top 5 FN", "Parle-moi du CRB Katanga", "Résumé". Essayez !`;
 }
 </script>
 </body>
