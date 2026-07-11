@@ -31,7 +31,6 @@
         .section-title { font-size: 1.1em; color: #1a237e; margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         
         .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-        .cards-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
         .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; }
         .card .value { font-size: 1.3em; font-weight: bold; color: #1a237e; }
         .card .label { color: #666; font-size: 0.7em; margin-top: 5px; }
@@ -74,7 +73,7 @@
         .sync-msg { display: none; background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
         
         @media print { .header, .input-section, .btn, .btn-logout, .btn-pdf, .btn-sync, .btn-reset, .alert-box { display: none !important; } .dashboard { display: block !important; } body { background: white; } .card { box-shadow: none; border: 1px solid #ddd; } }
-        @media (max-width: 768px) { .cards, .cards-6 { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
+        @media (max-width: 768px) { .cards { grid-template-columns: 1fr 1fr; } .form-row { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
@@ -122,7 +121,6 @@
         
         <!-- ========== VUE ASN ========== -->
         <div id="vueASN">
-            <!-- Synthèse Nationale -->
             <div class="section-title">📊 SYNTHÈSE NATIONALE</div>
             <div class="cards">
                 <div class="card blue"><div class="value" id="nbReponses">0</div><div class="label">Structures /11</div></div>
@@ -139,7 +137,7 @@
                 <div class="card red"><div class="value" id="totalGrpInactifs">0</div><div class="label">Group. Inactifs</div></div>
             </div>
             
-            <!-- Transmission au BN -->
+            <!-- TRANSMISSION AU BN -->
             <div class="section-title">🔄 TRANSMISSION AU BUREAU NATIONAL</div>
             <div class="cards">
                 <div class="card blue"><div class="value" id="fnTransmis">0</div><div class="label">FN Transmis (20%)</div></div>
@@ -152,17 +150,15 @@
                 <div class="card green"><div class="value" id="totalAmis">0</div><div class="label">👥 Amis Contributeurs</div></div>
             </div>
             
-            <!-- Détail par Structure -->
+            <!-- DÉTAIL PAR STRUCTURE -->
             <div class="section-title">📋 DÉTAIL PAR STRUCTURE</div>
             <div class="box"><table><thead><tr>
-                <th>Structure</th><th>FN</th><th>FD</th><th>Marqués</th><th>Loyers</th><th>Total ASL</th><th>ASL Act.</th><th>ASL Inact.</th><th>Total Grp</th><th>Grp Act.</th><th>Grp Inact.</th><th>FN→BN</th><th>Marq→BN</th><th>Loy→BN</th><th>Thésaur.</th><th>Statut</th>
+                <th>Structure</th><th>FN</th><th>FD</th><th>Marqués</th><th>Loyers</th><th>Total ASL</th><th>ASL Act.</th><th>ASL Inact.</th><th>Total Grp</th><th>Grp Act.</th><th>Grp Inact.</th><th>FN→BN</th><th>Marq→BN</th><th>Loy→BN</th><th>Thésaur.</th>
             </tr></thead><tbody id="detailBody"></tbody></table></div>
             
-            <!-- Difficultés -->
             <div class="section-title">⚠️ SYNTHÈSE DES DIFFICULTÉS</div>
             <div class="box"><div id="difficultesContent">Aucune difficulté signalée.</div></div>
             
-            <!-- Recommandations -->
             <div class="section-title">📋 RECOMMANDATIONS</div>
             <div class="recommandations"><div id="decisionsContent"></div></div>
         </div>
@@ -191,8 +187,8 @@
             <div class="cards">
                 <div class="card blue"><div class="value" id="monFnTransmis">0</div><div class="label">FN Transmis (20%)</div></div>
                 <div class="card orange"><div class="value" id="monTauxFn">0%</div><div class="label">Taux Trans. FN</div></div>
-                <div class="card purple"><div class="value" id="monMarquesTransmis">0</div><div class="label">Marqués Transmis</div></div>
-                <div class="card green"><div class="value" id="monLoyersTransmis">0</div><div class="label">Loyers Transmis</div></div>
+                <div class="card purple"><div class="value" id="monMarquesTransmis">0</div><div class="label">Marqués Transmis (100%)</div></div>
+                <div class="card green"><div class="value" id="monLoyersTransmis">0</div><div class="label">Loyers Transmis (100%)</div></div>
                 <div class="card red"><div class="value" id="monThesaurisation">0%</div><div class="label">⚠️ Thésaurisation</div></div>
             </div>
             
@@ -240,7 +236,7 @@
             <div class="section-title">🔄 FONDS TRANSMIS AU BUREAU NATIONAL</div>
             <div class="form-row">
                 <div class="form-group"><label>FN Transmis au BN (20% du FN)</label><input type="number" id="fnTransmisInput" value="0"></div>
-                <div class="form-group"><label>Fonds Marqués Transmis au BN</label><input type="number" id="marquesTransmisInput" value="0"></div>
+                <div class="form-group"><label>Total Fonds Marqués Transmis au BN</label><input type="number" id="marquesTransmisInput" value="0"></div>
                 <div class="form-group"><label>Loyers Transmis au BN</label><input type="number" id="loyersTransmisInput" value="0"></div>
             </div>
             
@@ -278,7 +274,6 @@ const passwords = {
 let currentUser = null;
 let donnees = JSON.parse(localStorage.getItem('donnees_asn')) || [];
 
-// Initialiser les 11 structures si vide
 if (donnees.length === 0) {
     const structures = ["Bureau National","CRB Ouest","CRB KATANGA","CRB KASAI OCCIDENTAL","CRB KASAI ORIENTAL","CRB SUD KIVU","CRB NORD KIVU","CRB PROVINCE ORIENTALE","CRB LUALABA","CRB BANDUNDU","CRB EQUATEUR"];
     structures.forEach(r => donnees.push({region:r,fn:0,fd:0,loyers:0,temples:0,international:0,continental:0,mausolee:0,socioEco:0,fnTransmis:0,marquesTransmis:0,loyersTransmis:0,totalAsl:0,aslActives:0,totalGroupements:0,grpActifs:0,amis:0,montantAmis:0,montantAsl:0,montantGrp:0,actions:0,difficultes:"",mois:"Juin",exercice:183}));
@@ -328,7 +323,6 @@ function afficher() {
         const loyersTransmis = donnees.reduce((s,d) => s + (d.loyersTransmis||0), 0);
         const fnAttendu = totalFN * 0.20;
         const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
-        const tauxThes = totalFN > 0 ? Math.round((totalFN - fnTransmis - totalFD - totalLoyers - totalMarques + marquesTransmis + loyersTransmis) / Math.max(totalFN,1) * 100) : 0;
 
         document.getElementById('nbReponses').textContent = nbReponses + '/11';
         document.getElementById('nbManquantes').textContent = 11 - nbReponses;
@@ -348,7 +342,7 @@ function afficher() {
         document.getElementById('tauxTransmissionMarques').textContent = getTaux(marquesTransmis, totalMarques) + '%';
         document.getElementById('loyersTransmis').textContent = loyersTransmis.toLocaleString() + ' USD';
         document.getElementById('tauxTransmissionLoyers').textContent = getTaux(loyersTransmis, totalLoyers) + '%';
-        document.getElementById('tauxThesaurisation').textContent = tauxThes + '%';
+        document.getElementById('tauxThesaurisation').textContent = getTaux(Math.max(0,totalFN-fnTransmis-totalFD-totalMarques+marquesTransmis-totalLoyers+loyersTransmis), Math.max(totalFN,1)) + '%';
         document.getElementById('totalAmis').textContent = totalAmis;
 
         const trie = [...donnees].sort((a,b) => (b.fn||0) - (a.fn||0));
@@ -357,9 +351,7 @@ function afficher() {
             const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
             const inactivesASL = (d.totalAsl||0) - (d.aslActives||0);
             const inactifsGrp = (d.totalGroupements||0) - (d.grpActifs||0);
-            const fnAtt = (d.fn||0) * 0.20;
-            const tauxThesD = (d.fn||0) > 0 ? Math.round(((d.fn||0) - (d.fnTransmis||0) - (d.fd||0) - marques + (d.marquesTransmis||0)) / Math.max((d.fn||0),1) * 100) : 0;
-            const [stTexte, stClasse] = getStatutThesaurisation(tauxThesD);
+            const [stTexte, stClasse] = getStatutThesaurisation(getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)));
             detailHTML += `<tr>
                 <td><strong>${d.region}</strong></td><td>${(d.fn||0).toLocaleString()}</td><td>${(d.fd||0).toLocaleString()}</td>
                 <td>${marques.toLocaleString()}</td><td>${(d.loyers||0).toLocaleString()}</td>
@@ -374,11 +366,8 @@ function afficher() {
         document.getElementById('difficultesContent').innerHTML = diff.length === 0 ? '<p>Aucune difficulté signalée.</p>' : diff.map(d => `<div class="difficulte-item"><strong>${d.region} :</strong> ${d.difficultes}</div>`).join('');
         
         const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
-        const thesauriseurs = donnees.filter(d => { const m=(d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0); const fnAtt=(d.fn||0)*0.20; const th=Math.round(((d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-m+(d.marquesTransmis||0))/Math.max((d.fn||0),1)*100); return th>20; });
         let dec = '';
         if (nonSoumis.length) dec += `<div class="decision-item">📞 Contacter ${nonSoumis.map(d=>d.region).join(', ')}.</div>`;
-        if (thesauriseurs.length) dec += `<div class="decision-item">🚨 Thésaurisation détectée : ${thesauriseurs.map(d=>d.region).join(', ')}.</div>`;
-        if (diff.length) dec += `<div class="decision-item">⚠️ ${diff.length} structure(s) ont signalé des difficultés.</div>`;
         dec += `<div class="decision-item">📊 Présenter ce tableau à l'Assemblée Nationale.</div>`;
         document.getElementById('decisionsContent').innerHTML = dec;
     } else {
@@ -398,7 +387,7 @@ function afficher() {
         document.getElementById('monTauxFn').textContent = getTaux(d.fnTransmis||0, (d.fn||0)*0.20)+'%';
         document.getElementById('monMarquesTransmis').textContent = (d.marquesTransmis||0).toLocaleString()+' USD';
         document.getElementById('monLoyersTransmis').textContent = (d.loyersTransmis||0).toLocaleString()+' USD';
-        document.getElementById('monThesaurisation').textContent = getTaux((d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0), Math.max(d.fn||0,1))+'%';
+        document.getElementById('monThesaurisation').textContent = getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1))+'%';
         document.getElementById('monAmis').textContent = d.amis||0;
         document.getElementById('monMontantAmis').textContent = (d.montantAmis||0).toLocaleString()+' USD';
         document.getElementById('monMontantASL').textContent = (d.montantAsl||0).toLocaleString()+' USD';
