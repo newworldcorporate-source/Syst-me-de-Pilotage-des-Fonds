@@ -450,9 +450,8 @@ function synchroniserGoogleSheets() {
 function resetDonnees() { if (confirm('⚠️ Remettre à zéro ?')) { localStorage.removeItem('donnees_asn'); localStorage.removeItem('base_acteurs'); location.reload(); } }
 
 function soumettreDonnees() {
-    // Vérification que currentUser est défini
     if (!currentUser) {
-        alert('⚠️ Erreur : utilisateur non connecté. Veuillez vous reconnecter.');
+        alert('⚠️ Erreur : utilisateur non connecté.');
         return;
     }
     
@@ -460,6 +459,20 @@ function soumettreDonnees() {
         region: currentUser,
         exercice: parseInt(document.getElementById('exercice').value) || 183,
         mois: document.getElementById('mois').value,
+        // FONDS COLLECTÉS
+        fn: parseFloat(document.getElementById('fnInput').value) || 0,
+        fd: parseFloat(document.getElementById('fdInput').value) || 0,
+        loyers: parseFloat(document.getElementById('loyersInput').value) || 0,
+        temples: parseFloat(document.getElementById('templesInput').value) || 0,
+        international: parseFloat(document.getElementById('internationalInput').value) || 0,
+        continental: parseFloat(document.getElementById('continentalInput').value) || 0,
+        mausolee: parseFloat(document.getElementById('mausoleeInput').value) || 0,
+        socioEco: parseFloat(document.getElementById('socioEcoInput').value) || 0,
+        // FONDS TRANSMIS
+        fnTransmis: parseFloat(document.getElementById('fnTransmisInput').value) || 0,
+        marquesTransmis: parseFloat(document.getElementById('marquesTransmisInput').value) || 0,
+        loyersTransmis: parseFloat(document.getElementById('loyersTransmisInput').value) || 0,
+        // EFFECTIFS
         totalCroyants: parseInt(document.getElementById('totalCroyantsInput').value) || 0,
         amis: parseInt(document.getElementById('amisInput').value) || 0,
         totalAsl: parseInt(document.getElementById('totalAslInput').value) || 0,
@@ -470,28 +483,26 @@ function soumettreDonnees() {
         entreprisesContrib: parseInt(document.getElementById('entreprisesContribInput').value) || 0,
         totalAsst: parseInt(document.getElementById('totalAsstInput').value) || 0,
         asstActifs: parseInt(document.getElementById('asstActifsInput').value) || 0,
-        fn: parseFloat(document.getElementById('fnInput').value) || 0,
-        fd: parseFloat(document.getElementById('fdInput').value) || 0,
-        loyers: parseFloat(document.getElementById('loyersInput').value) || 0,
-        temples: parseFloat(document.getElementById('templesInput').value) || 0,
-        international: parseFloat(document.getElementById('internationalInput').value) || 0,
-        continental: parseFloat(document.getElementById('continentalInput').value) || 0,
-        mausolee: parseFloat(document.getElementById('mausoleeInput').value) || 0,
-        socioEco: parseFloat(document.getElementById('socioEcoInput').value) || 0,
-        fnTransmis: parseFloat(document.getElementById('fnTransmisInput').value) || 0,
-        marquesTransmis: parseFloat(document.getElementById('marquesTransmisInput').value) || 0,
-        loyersTransmis: parseFloat(document.getElementById('loyersTransmisInput').value) || 0,
-        // CORRIGÉ : actionsInput n'existe pas → retiré
+        // DIVERS
         difficultes: document.getElementById('difficultesInput').value
     };
     
-    // Vérification : au moins un champ doit être rempli
-    const aDesDonnees = data.fn > 0 || data.fd > 0 || data.amis > 0 || data.totalCroyants > 0;
-    if (!aDesDonnees) {
-        if (!confirm('⚠️ Toutes les valeurs sont à zéro. Voulez-vous vraiment envoyer un rapport vide ?')) {
-            return;
-        }
-    }
+    const idx = donnees.findIndex(d => d.region === currentUser);
+    if (idx >= 0) donnees[idx] = {...donnees[idx], ...data}; 
+    else donnees.push(data);
+    
+    localStorage.setItem('donnees_asn', JSON.stringify(donnees));
+    
+    const successMsg = document.getElementById('successMsg');
+    successMsg.style.display = 'block';
+    successMsg.textContent = '✅ Rapport enregistré pour ' + currentUser + ' !';
+    setTimeout(() => successMsg.style.display = 'none', 4000);
+    
+    afficher();
+    synchroniserGoogleSheets();
+    
+    console.log('✅ Données sauvegardées pour', currentUser, data);
+}
     
     // Sauvegarde dans donnees
     const idx = donnees.findIndex(d => d.region === currentUser);
