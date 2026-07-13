@@ -140,8 +140,8 @@
                 <div class="card blue"><div class="value" id="fnTransmis">0</div><div class="label">FN Transmis (20%)</div></div>
                 <div class="card orange"><div class="value" id="tauxTransmissionFn">0%</div><div class="label">Taux Trans. FN</div></div>
                 <div class="card purple"><div class="value" id="marquesTransmis">0</div><div class="label">Marqués Transmis (100%)</div></div>
-                <div class="card orange"><div class="value" id="tauxTransmissionMarques">0%</div><div class="label">Taux Trans. Marqués</div></div>
                 <div class="card green"><div class="value" id="loyersTransmis">0</div><div class="label">Loyers Transmis (100%)</div></div>
+                <div class="card orange"><div class="value" id="tauxTransmissionMarques">0%</div><div class="label">Taux Trans. Marqués</div></div>
                 <div class="card orange"><div class="value" id="tauxTransmissionLoyers">0%</div><div class="label">Taux Trans. Loyers</div></div>
                 <div class="card red"><div class="value" id="tauxThesaurisation">0%</div><div class="label">⚠️ Thésaurisation</div></div>
             </div>
@@ -150,20 +150,30 @@
             <div class="box"><table><thead><tr>
                 <th onclick="trierTableau('region')">Structure ↕</th><th onclick="trierTableau('fn')">FN ↕</th><th>FD</th><th>Croyants</th><th>%Amis</th><th>ASL Tot</th><th>%ASL</th><th>Grp Tot</th><th>%Grp</th><th>Entr Tot</th><th>%Entr</th><th>FN→BN</th><th>Marq→BN</th><th>Loy→BN</th><th>Thésaur.</th>
             </tr></thead><tbody id="detailBody"></tbody></table></div>
+            
+            <div class="section-title">⚠️ DIFFICULTÉS</div>
+            <div class="box"><div id="difficultesContent">Aucune difficulté signalée.</div></div>
+            <div class="section-title">📋 RECOMMANDATIONS</div>
+            <div class="recommandations"><div id="decisionsContent"></div></div>
         </div>
         
-        <!-- VUE CRB -->
+        <!-- VUE CRB/BN -->
         <div id="vueCRB" style="display:none;">
             <div class="section-title">📊 VOS EFFECTIFS</div>
             <div class="cards">
                 <div class="card blue"><div class="value" id="monTotalCroyants">0</div><div class="label">👥 Total Croyants</div></div>
                 <div class="card orange"><div class="value" id="monTauxAmis">0%</div><div class="label">📊 Taux Amis</div></div>
+                <div class="card green"><div class="value" id="monAmis">0</div><div class="label">Amis Contributeurs</div></div>
                 <div class="card blue"><div class="value" id="monTotalASL">0</div><div class="label">Total ASL</div></div>
                 <div class="card orange"><div class="value" id="monTauxASL">0%</div><div class="label">📊 Taux ASL</div></div>
+                <div class="card green"><div class="value" id="monASLActives">0</div><div class="label">ASL Actives</div></div>
                 <div class="card purple"><div class="value" id="monTotalGrp">0</div><div class="label">Total Groupements</div></div>
                 <div class="card orange"><div class="value" id="monTauxGrp">0%</div><div class="label">📊 Taux Group.</div></div>
+                <div class="card green"><div class="value" id="monGrpActifs">0</div><div class="label">Group. Actifs</div></div>
                 <div class="card blue"><div class="value" id="monTotalEntreprises">0</div><div class="label">Total Entr. Bahá'íes</div></div>
                 <div class="card orange"><div class="value" id="monTauxEntreprises">0%</div><div class="label">📊 Taux Entreprises</div></div>
+                <div class="card blue"><div class="value" id="monTotalAsst">0</div><div class="label">Total Ass. Trésoriers</div></div>
+                <div class="card green"><div class="value" id="monAsstActifs">0</div><div class="label">Ass. Trésoriers Actifs</div></div>
             </div>
             
             <div class="section-title">💰 FONDS COLLECTÉS</div>
@@ -283,7 +293,6 @@
 <button id="btnAssistant" onclick="toggleAssistant()" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:linear-gradient(135deg,#1a237e,#283593); color:white; border:none; border-radius:50%; font-size:1.5em; cursor:pointer; box-shadow:0 5px 20px rgba(0,0,0,0.3); z-index:999;">🤖</button>
 
 <script>
-// ========== MOTS DE PASSE ==========
 const passwords = {
     "ASN": "asn2026", "Bureau National": "bn2026", "CRB Ouest": "ouest2026",
     "CRB KATANGA": "katanga2026", "CRB KASAI OCCIDENTAL": "kasaiocc2026",
@@ -292,7 +301,6 @@ const passwords = {
     "CRB LUALABA": "lualaba2026", "CRB BANDUNDU": "bandundu2026", "CRB EQUATEUR": "equateur2026"
 };
 
-// ========== VARIABLES ==========
 let currentUser = null;
 let donnees = JSON.parse(localStorage.getItem('donnees_asn')) || [];
 let baseActeurs = JSON.parse(localStorage.getItem('base_acteurs')) || {};
@@ -301,7 +309,7 @@ let ordreTri = {colonne: 'fn', asc: false};
 if (donnees.length === 0) {
     const structures = ["Bureau National","CRB Ouest","CRB KATANGA","CRB KASAI OCCIDENTAL","CRB KASAI ORIENTAL","CRB SUD KIVU","CRB NORD KIVU","CRB PROVINCE ORIENTALE","CRB LUALABA","CRB BANDUNDU","CRB EQUATEUR"];
     structures.forEach(r => {
-        donnees.push({region:r,fn:0,fd:0,loyers:0,temples:0,international:0,continental:0,mausolee:0,socioEco:0,fnTransmis:0,marquesTransmis:0,loyersTransmis:0,totalAsl:0,aslActives:0,totalGroupements:0,grpActifs:0,totalAsst:0,asstActifs:0,totalCroyants:0,totalEntreprises:0,entreprisesContrib:0,amis:0,montantAmis:0,montantAsl:0,montantGrp:0,actions:0,difficultes:"",mois:"Juin",exercice:183});
+        donnees.push({region:r,fn:0,fd:0,loyers:0,temples:0,international:0,continental:0,mausolee:0,socioEco:0,fnTransmis:0,marquesTransmis:0,loyersTransmis:0,totalAsl:0,aslActives:0,totalGroupements:0,grpActifs:0,totalAsst:0,asstActifs:0,totalCroyants:0,totalEntreprises:0,entreprisesContrib:0,amis:0,actions:0,difficultes:"",mois:"Juin",exercice:183});
         if (!baseActeurs[r]) baseActeurs[r] = [];
     });
     localStorage.setItem('donnees_asn', JSON.stringify(donnees));
@@ -310,7 +318,6 @@ if (donnees.length === 0) {
 
 const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyLru9VoyDa56O4urVlQrs-Eh-o9rdHGOkdf4S_JBMY8QDWw9wsNaa4PpDnMTyu0E-cjg/exec';
 
-// ========== FONCTIONS ==========
 function login() {
     const region = document.getElementById('regionSelect').value;
     const password = document.getElementById('passwordInput').value;
@@ -376,42 +383,48 @@ function afficher() {
         document.getElementById('tauxTransmissionLoyers').textContent = getTaux(loyersTransmis, totalLoyers) + '%';
         document.getElementById('tauxThesaurisation').textContent = getTaux(Math.max(0,totalFN-fnTransmis-totalFD-totalMarques+marquesTransmis-totalLoyers+loyersTransmis), Math.max(totalFN,1)) + '%';
 
-        // TRI
         let trie = [...donnees];
-        const col = ordreTri.colonne;
-        if (col === 'region') trie.sort((a,b) => ordreTri.asc ? b.region.localeCompare(a.region) : a.region.localeCompare(b.region));
-        else if (col === 'fn') trie.sort((a,b) => ordreTri.asc ? (a.fn||0) - (b.fn||0) : (b.fn||0) - (a.fn||0));
+        if (ordreTri.colonne === 'region') trie.sort((a,b) => ordreTri.asc ? b.region.localeCompare(a.region) : a.region.localeCompare(b.region));
+        else if (ordreTri.colonne === 'fn') trie.sort((a,b) => ordreTri.asc ? (a.fn||0) - (b.fn||0) : (b.fn||0) - (a.fn||0));
         else trie.sort((a,b) => (b.fn||0) - (a.fn||0));
 
         let detailHTML = '';
         trie.forEach(d => {
             const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
-            const tauxAmisD = getTaux(d.amis||0, d.totalCroyants||0);
-            const tauxASLD = getTaux(d.aslActives||0, d.totalAsl||0);
-            const tauxGrpD = getTaux(d.grpActifs||0, d.totalGroupements||0);
-            const tauxEntrD = getTaux(d.entreprisesContrib||0, d.totalEntreprises||0);
             const [stTexte, stClasse] = getStatutThesaurisation(getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)));
             detailHTML += `<tr>
                 <td><strong>${d.region}</strong></td><td>${(d.fn||0).toLocaleString()}</td><td>${(d.fd||0).toLocaleString()}</td>
-                <td>${(d.totalCroyants||0).toLocaleString()}</td><td>${tauxAmisD}%</td>
-                <td>${d.totalAsl||0}</td><td>${tauxASLD}%</td>
-                <td>${d.totalGroupements||0}</td><td>${tauxGrpD}%</td>
-                <td>${d.totalEntreprises||0}</td><td>${tauxEntrD}%</td>
+                <td>${(d.totalCroyants||0).toLocaleString()}</td><td>${getTaux(d.amis||0,d.totalCroyants||0)}%</td>
+                <td>${d.totalAsl||0}</td><td>${getTaux(d.aslActives||0,d.totalAsl||0)}%</td>
+                <td>${d.totalGroupements||0}</td><td>${getTaux(d.grpActifs||0,d.totalGroupements||0)}%</td>
+                <td>${d.totalEntreprises||0}</td><td>${getTaux(d.entreprisesContrib||0,d.totalEntreprises||0)}%</td>
                 <td>${(d.fnTransmis||0).toLocaleString()}</td><td>${(d.marquesTransmis||0).toLocaleString()}</td><td>${(d.loyersTransmis||0).toLocaleString()}</td>
                 <td><span class="${stClasse}">${stTexte}</span></td></tr>`;
         });
         document.getElementById('detailBody').innerHTML = detailHTML;
+        document.getElementById('difficultesContent').innerHTML = donnees.filter(d => d.difficultes && d.difficultes.trim()).length === 0 ? '<p>Aucune difficulté signalée.</p>' : donnees.filter(d => d.difficultes && d.difficultes.trim()).map(d => `<div class="difficulte-item"><strong>${d.region} :</strong> ${d.difficultes}</div>`).join('');
+        
+        const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
+        let dec = '';
+        if (nonSoumis.length) dec += `<div class="decision-item">📞 Contacter ${nonSoumis.map(d=>d.region).join(', ')}.</div>`;
+        dec += `<div class="decision-item">💡 Posez vos questions à l'assistant IA (🤖).</div>`;
+        document.getElementById('decisionsContent').innerHTML = dec;
     } else {
         const d = donnees.find(x => x.region === currentUser) || {};
         const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
         document.getElementById('monTotalCroyants').textContent = (d.totalCroyants||0).toLocaleString();
         document.getElementById('monTauxAmis').textContent = getTaux(d.amis||0, d.totalCroyants||0) + '%';
+        document.getElementById('monAmis').textContent = d.amis||0;
         document.getElementById('monTotalASL').textContent = d.totalAsl||0;
         document.getElementById('monTauxASL').textContent = getTaux(d.aslActives||0, d.totalAsl||0) + '%';
+        document.getElementById('monASLActives').textContent = d.aslActives||0;
         document.getElementById('monTotalGrp').textContent = d.totalGroupements||0;
         document.getElementById('monTauxGrp').textContent = getTaux(d.grpActifs||0, d.totalGroupements||0) + '%';
+        document.getElementById('monGrpActifs').textContent = d.grpActifs||0;
         document.getElementById('monTotalEntreprises').textContent = d.totalEntreprises||0;
         document.getElementById('monTauxEntreprises').textContent = getTaux(d.entreprisesContrib||0, d.totalEntreprises||0) + '%';
+        document.getElementById('monTotalAsst').textContent = d.totalAsst||0;
+        document.getElementById('monAsstActifs').textContent = d.asstActifs||0;
         document.getElementById('monFN').textContent = (d.fn||0).toLocaleString()+' USD';
         document.getElementById('monFD').textContent = (d.fd||0).toLocaleString()+' USD';
         document.getElementById('monMarques').textContent = marques.toLocaleString()+' USD';
@@ -472,14 +485,9 @@ function soumettreDonnees() {
     afficher();
 }
 
-// ========== BASE DE DONNÉES ACTEURS ==========
-function ouvrirBaseDonnees() {
-    document.getElementById('dbRegion').textContent = currentUser;
-    document.getElementById('modalBaseDonnees').style.display = 'flex';
-    afficherActeurs();
-}
+// BASE DE DONNÉES ACTEURS
+function ouvrirBaseDonnees() { document.getElementById('dbRegion').textContent = currentUser; document.getElementById('modalBaseDonnees').style.display = 'flex'; afficherActeurs(); }
 function fermerBaseDonnees() { document.getElementById('modalBaseDonnees').style.display = 'none'; }
-
 function ajouterActeur() {
     const type = document.getElementById('typeActeur').value;
     const nom = document.getElementById('nomActeur').value.trim();
@@ -487,47 +495,25 @@ function ajouterActeur() {
     const statut = document.getElementById('statutActeur').value;
     const montant = parseFloat(document.getElementById('montantActeur').value) || 0;
     const mois = document.getElementById('moisActeur').value;
-    
     if (!nom) { alert('Veuillez entrer un nom'); return; }
-    
     if (!baseActeurs[currentUser]) baseActeurs[currentUser] = [];
     baseActeurs[currentUser].push({type, nom, localisation, statut, montant, mois, date: new Date().toISOString()});
     localStorage.setItem('base_acteurs', JSON.stringify(baseActeurs));
-    
-    document.getElementById('nomActeur').value = '';
-    document.getElementById('localisationActeur').value = '';
-    document.getElementById('montantActeur').value = '0';
+    document.getElementById('nomActeur').value = ''; document.getElementById('localisationActeur').value = ''; document.getElementById('montantActeur').value = '0';
     afficherActeurs();
 }
-
-function supprimerActeur(index) {
-    if (confirm('Supprimer cet acteur ?')) {
-        baseActeurs[currentUser].splice(index, 1);
-        localStorage.setItem('base_acteurs', JSON.stringify(baseActeurs));
-        afficherActeurs();
-    }
-}
-
+function supprimerActeur(index) { if (confirm('Supprimer ?')) { baseActeurs[currentUser].splice(index, 1); localStorage.setItem('base_acteurs', JSON.stringify(baseActeurs)); afficherActeurs(); } }
 function afficherActeurs() {
     const acteurs = baseActeurs[currentUser] || [];
-    let html = '';
-    if (acteurs.length === 0) html = '<tr><td colspan="7">Aucun acteur enregistré.</td></tr>';
-    else {
-        acteurs.forEach((a, i) => {
-            const statutClass = a.statut === 'actif' ? 'statut-green' : 'statut-red';
-            html += `<tr>
-                <td>${a.type === 'ami' ? '👤' : a.type === 'asl' ? '🏛️' : a.type === 'groupement' ? '🏘️' : a.type === 'entreprise' ? '🏢' : '👷'} ${a.type}</td>
-                <td>${a.nom}</td><td>${a.localisation||'-'}</td>
-                <td><span class="${statutClass}">${a.statut}</span></td>
-                <td>${a.montant.toLocaleString()} USD</td><td>${a.mois}</td>
-                <td><button onclick="supprimerActeur(${i})" style="background:#f44336;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">🗑️</button></td>
-            </tr>`;
-        });
-    }
+    let html = acteurs.length === 0 ? '<tr><td colspan="7">Aucun acteur enregistré.</td></tr>' : '';
+    acteurs.forEach((a, i) => {
+        const sc = a.statut === 'actif' ? 'statut-green' : 'statut-red';
+        html += `<tr><td>${a.type==='ami'?'👤':a.type==='asl'?'🏛️':a.type==='groupement'?'🏘️':a.type==='entreprise'?'🏢':'👷'} ${a.type}</td><td>${a.nom}</td><td>${a.localisation||'-'}</td><td><span class="${sc}">${a.statut}</span></td><td>${a.montant.toLocaleString()} USD</td><td>${a.mois}</td><td><button onclick="supprimerActeur(${i})" style="background:#f44336;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">🗑️</button></td></tr>`;
+    });
     document.getElementById('acteursBody').innerHTML = html;
 }
 
-// ========== ASSISTANT IA ==========
+// ASSISTANT IA
 function toggleAssistant() { const box = document.getElementById('assistantBox'), btn = document.getElementById('btnAssistant'); if (box.style.display === 'none' || box.style.display === '') { box.style.display = 'block'; btn.style.display = 'none'; } else { box.style.display = 'none'; btn.style.display = 'block'; } }
 function poserQuestion() {
     const question = document.getElementById('questionInput').value.trim(); if (!question) return;
@@ -536,7 +522,6 @@ function poserQuestion() {
     messages.innerHTML += `<div style="background:#f5f5f5; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85em;">🤖 ${analyserQuestion(question.toLowerCase())}</div>`;
     document.getElementById('questionInput').value = ''; messages.scrollTop = messages.scrollHeight;
 }
-
 function analyserQuestion(q) {
     const totalFN = donnees.reduce((s,d) => s + (d.fn||0), 0);
     const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
@@ -551,44 +536,15 @@ function analyserQuestion(q) {
     const totalEntreprises = donnees.reduce((s,d) => s + (d.totalEntreprises||0), 0);
     const totalEntreprisesContrib = donnees.reduce((s,d) => s + (d.entreprisesContrib||0), 0);
     const fnTransmis = donnees.reduce((s,d) => s + (d.fnTransmis||0), 0);
-    
-    // Compter les acteurs dans la base
     let totalActeurs = 0, acteursActifs = 0;
-    for (const region in baseActeurs) {
-        totalActeurs += baseActeurs[region].length;
-        acteursActifs += baseActeurs[region].filter(a => a.statut === 'actif').length;
-    }
+    for (const region in baseActeurs) { totalActeurs += baseActeurs[region].length; acteursActifs += baseActeurs[region].filter(a => a.statut === 'actif').length; }
 
-    if (q.includes('diagnostic') || q.includes('complet')) {
-        return `📊 <b>DIAGNOSTIC COMPLET</b><br><br>
-        💰 FN=${totalFN.toLocaleString()} USD | Transmis=${getTaux(fnTransmis,totalFN*0.20)}%<br>
-        👥 Croyants=${totalCroyants.toLocaleString()} | Taux Amis=${getTaux(totalAmis,totalCroyants)}%<br>
-        🏛️ Taux ASL=${getTaux(totalASLActives,totalASL)}% | 🏘️ Taux Grp=${getTaux(totalGrpActifs,totalGrp)}%<br>
-        🏢 Taux Entr.=${getTaux(totalEntreprisesContrib,totalEntreprises)}%<br>
-        🗄️ Base Acteurs: ${totalActeurs} enregistrés, ${acteursActifs} actifs<br>
-        📊 ${nbReponses}/11 répondu | ${nonSoumis.length} non soumis`;
-    }
-    if (q.includes('inactif') || q.includes('qui ne contribue')) {
-        let rep = `🔴 <b>ACTEURS INACTIFS</b><br>`;
-        for (const region in baseActeurs) {
-            const inactifs = baseActeurs[region].filter(a => a.statut === 'inactif');
-            if (inactifs.length > 0) rep += `• ${region}: ${inactifs.length} inactifs<br>`;
-        }
-        return rep || '✅ Aucun acteur inactif.';
-    }
-    if (q.includes('taux') || q.includes('participation')) {
-        return `📊 <b>TAUX DE PARTICIPATION</b><br>
-        👥 Amis: ${getTaux(totalAmis,totalCroyants)}%<br>
-        🏛️ ASL: ${getTaux(totalASLActives,totalASL)}%<br>
-        🏘️ Groupements: ${getTaux(totalGrpActifs,totalGrp)}%<br>
-        🏢 Entreprises: ${getTaux(totalEntreprisesContrib,totalEntreprises)}%<br>
-        🗄️ Acteurs: ${getTaux(acteursActifs,totalActeurs)}%`;
-    }
-    if (q.includes('top') || q.includes('classement')) return `🏆 <b>TOP FN</b><br>${trieFN.slice(0,5).map((d,i) => `${i+1}. ${d.region}: ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
-    for (const d of donnees) if (q.includes(d.region.toLowerCase())) {
-        const acteurs = baseActeurs[d.region] || [];
-        return `📊 <b>${d.region}</b> : FN=${(d.fn||0).toLocaleString()} USD | Croyants=${(d.totalCroyants||0).toLocaleString()} | Taux Amis=${getTaux(d.amis||0,d.totalCroyants||0)}% | Taux ASL=${getTaux(d.aslActives||0,d.totalAsl||0)}% | 🗄️ ${acteurs.length} acteurs enregistrés`;
-    }
+    if (q.includes('diagnostic') || q.includes('complet')) return `📊 <b>DIAGNOSTIC</b><br>💰 FN=${totalFN.toLocaleString()} USD | Trans=${getTaux(fnTransmis,totalFN*0.20)}%<br>👥 Amis:${getTaux(totalAmis,totalCroyants)}% | ASL:${getTaux(totalASLActives,totalASL)}% | Grp:${getTaux(totalGrpActifs,totalGrp)}% | Entr:${getTaux(totalEntreprisesContrib,totalEntreprises)}%<br>🗄️ ${totalActeurs} acteurs (${acteursActifs} actifs)<br>📊 ${nbReponses}/11 répondu | ${nonSoumis.length} non soumis`;
+    if (q.includes('inactif')) { let r=''; for(const reg in baseActeurs){const ia=baseActeurs[reg].filter(a=>a.statut==='inactif'); if(ia.length) r+=`• ${reg}: ${ia.length}<br>`;} return r||'✅ Aucun inactif.'; }
+    if (q.includes('taux')||q.includes('participation')) return `📊 <b>TAUX</b><br>👥 Amis: ${getTaux(totalAmis,totalCroyants)}%<br>🏛️ ASL: ${getTaux(totalASLActives,totalASL)}%<br>🏘️ Grp: ${getTaux(totalGrpActifs,totalGrp)}%<br>🏢 Entr: ${getTaux(totalEntreprisesContrib,totalEntreprises)}%`;
+    if (q.includes('top')) return `🏆 <b>TOP FN</b><br>${trieFN.slice(0,5).map((d,i)=>`${i+1}. ${d.region}: ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
+    for(const d of donnees) if(q.includes(d.region.toLowerCase())){const a=baseActeurs[d.region]||[]; return `📊 <b>${d.region}</b> : FN=${(d.fn||0).toLocaleString()} USD | Amis=${getTaux(d.amis||0,d.totalCroyants||0)}% | ASL=${getTaux(d.aslActives||0,d.totalAsl||0)}% | Grp=${getTaux(d.grpActifs||0,d.totalGroupements||0)}% | Entr=${getTaux(d.entreprisesContrib||0,d.totalEntreprises||0)}% | 🗄️ ${a.length} acteurs`;}
+    if(q.includes('qui a envoyé')){const s=donnees.filter(d=>(d.fn||0)>0||(d.amis||0)>0);return s.length?`✅ ${s.length}/11 : ${s.map(d=>d.region).join(', ')}`:'📊 Aucune.';}
     return `💡 Essayez : "Diagnostic complet", "Qui est inactif ?", "Taux de participation", "Top FN", "Analyse CRB Katanga"`;
 }
 </script>
