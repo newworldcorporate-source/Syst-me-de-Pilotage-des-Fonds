@@ -622,6 +622,13 @@ function analyserQuestion(q) {
         }
     }
 
+    // QUI A ENVOYÉ
+    if (q.includes('qui a envoyé') || q.includes('qui a soumis') || q.includes('qui a rempli')) {
+        const soumis = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0);
+        if (soumis.length === 0) return `📊 Aucune structure n'a encore envoyé de données ce mois-ci.`;
+        return `✅ <b>${soumis.length}/11 structures ont soumis :</b><br>${soumis.map(d => `• ${d.region} (FN: ${(d.fn||0).toLocaleString()} USD)`).join('<br>')}`;
+    }
+
     // RÉSUMÉ
     if (q.includes('résumé') || q.includes('resume') || q.includes('global') || q.includes('combien')) {
         return `📊 <b>RÉSUMÉ</b> : ${nbReponses}/11 répondu. FN=${totalFN.toLocaleString()} USD. ASL=${totalASL} (${totalASLActives} act.). Group.=${totalGrp} (${totalGrpActifs} act.). ${nonSoumis.length} non soumis. ${thesauriseurs.length} thésaurisation.`;
@@ -636,15 +643,8 @@ function analyserQuestion(q) {
     ⚖️ "Compare CRB Katanga et CRB Ouest" — Comparaison<br>
     🏆 "Top 5 FN" ou "Meilleur taux" — Classements<br>
     📄 "Rapport exécutif" — Pour l'Assemblée<br>
-    🏛️ "Parle-moi du Bureau National" — Détail structure`;
-}
-    // QUI A ENVOYÉ
-    if (q.includes('qui a envoyé') || q.includes('qui a soumis') || q.includes('qui a rempli')) {
-        const soumis = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0);
-        if (soumis.length === 0) return `📊 Aucune structure n'a encore envoyé de données ce mois-ci.`;
-        return `✅ <b>${soumis.length}/11 structures ont soumis :</b><br>${soumis.map(d => `• ${d.region} (FN: ${(d.fn||0).toLocaleString()} USD)`).join('<br>')}`;
-    }
-    return `💡 Je peux répondre à : "Fais un diagnostic complet", "Qui a besoin d'aide ?", "Analyse la thésaurisation", "Top 5 FN", "Parle-moi du CRB Katanga", "Résumé". Essayez !`;
+    🏛️ "Parle-moi du Bureau National" — Détail structure<br>
+    📬 "Qui a envoyé ?" — Liste des soumissions`;
 }
 </script>
 </body>
