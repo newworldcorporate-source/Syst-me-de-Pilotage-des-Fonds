@@ -479,28 +479,153 @@ function poserQuestion() {
 }
 function analyserQuestion(q) {
     const totalFN = donnees.reduce((s,d) => s + (d.fn||0), 0);
-    const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
-    const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
-    const trieFN = [...donnees].sort((a,b) => (b.fn||0) - (a.fn||0));
+    const totalFD = donnees.reduce((s,d) => s + (d.fd||0), 0);
+    const totalMarques = donnees.reduce((s,d) => s + (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0), 0);
+    const totalLoyers = donnees.reduce((s,d) => s + (d.loyers||0), 0);
     const totalASL = donnees.reduce((s,d) => s + (d.totalAsl||0), 0);
     const totalASLActives = donnees.reduce((s,d) => s + (d.aslActives||0), 0);
     const totalGrp = donnees.reduce((s,d) => s + (d.totalGroupements||0), 0);
     const totalGrpActifs = donnees.reduce((s,d) => s + (d.grpActifs||0), 0);
     const totalAsst = donnees.reduce((s,d) => s + (d.totalAsst||0), 0);
     const totalAsstActifs = donnees.reduce((s,d) => s + (d.asstActifs||0), 0);
-    const totalMarques = donnees.reduce((s,d) => s + (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0), 0);
-    const totalLoyers = donnees.reduce((s,d) => s + (d.loyers||0), 0);
+    const totalAmis = donnees.reduce((s,d) => s + (d.amis||0), 0);
     const fnTransmis = donnees.reduce((s,d) => s + (d.fnTransmis||0), 0);
+    const marquesTransmis = donnees.reduce((s,d) => s + (d.marquesTransmis||0), 0);
+    const loyersTransmis = donnees.reduce((s,d) => s + (d.loyersTransmis||0), 0);
+    const nbReponses = donnees.filter(d => (d.fn||0) > 0 || (d.amis||0) > 0).length;
+    const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
+    const trieFN = [...donnees].sort((a,b) => (b.fn||0) - (a.fn||0));
     const thesauriseurs = donnees.filter(d => getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1)) > 20);
+    
+    // Fonction pour trouver les corrélations
+    function trouverCorrelations() {
+        let insights = [];
+        // ASL inactives vs faible FN
+        donnees.forEach(d => {
+            const pctInactives = (d.totalAsl||0) > 0 ? ((d.totalAsl||0)-(d.aslActives||0))/(d.totalAsl||0)*100 : 0;
+            const fnFaible = (d.fn||0) < (totalFN/Math.max(nbReponses,1));
+            if (pctInactives > 50 && fnFaible) insights.push(`${d.region} : ${Math.round(pctInactives)}% ASL inactives + FN faible → Lier les deux ?`);
+        });
+        // Thésaurisation vs assistants inactifs
+        donnees.forEach(d => {
+            const pctAsstInactifs = (d.totalAsst||0) > 0 ? ((d.totalAsst||0)-(d.asstActifs||0))/(d.totalAsst||0)*100 : 0;
+            const tauxTh = getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)), Math.max((d.fn||0),1));
+            if (pctAsstInactifs > 50 && tauxTh > 20) insights.push(`${d.region} : ${Math.round(pctAsstInactifs)}% assistants inactifs + thésaurisation → Besoin de formation ?`);
+        });
+        return insights;
+    }
 
-    if (q.includes('diagnostic') || q.includes('complet')) return `📊 <b>DIAGNOSTIC</b><br>💰 FN=${totalFN.toLocaleString()} USD | Transmis=${fnTransmis.toLocaleString()} (${getTaux(fnTransmis,totalFN*0.20)}%)<br>🏛️ ASL=${totalASL} (Act:${totalASLActives}) | 🏘️ Grp=${totalGrp} (Act:${totalGrpActifs}) | 👤 Asst=${totalAsst} (Act:${totalAsstActifs})<br>📊 ${nbReponses}/11 répondu | ${nonSoumis.length} non soumis | ${thesauriseurs.length} thésaurisation`;
-    if (q.includes('top') || q.includes('classement')) return `🏆 <b>TOP FN</b><br>${trieFN.slice(0,5).map((d,i) => `${i+1}. ${d.region}: ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
-    if (q.includes('aide') || q.includes('prioritaire')) return `🚨 <b>À ACCOMPAGNER</b><br>📞 Non soumis: ${nonSoumis.length ? nonSoumis.map(d=>d.region).join(', ') : 'Aucun'}<br>🚨 Thésaurisation: ${thesauriseurs.length ? thesauriseurs.map(d=>d.region).join(', ') : 'Aucune'}`;
-    if (q.includes('thésaurisation')) { let r=''; donnees.forEach(d => { const t=getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-(d.temples||0)-(d.international||0)-(d.continental||0)-(d.mausolee||0)-(d.socioEco||0)+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)),Math.max((d.fn||0),1)); if(t>0) r+=`• ${d.region}: ${t}%<br>`; }); return r || '✅ Aucune thésaurisation.'; }
-    if (q.includes('qui a envoyé') || q.includes('qui a soumis')) { const s=donnees.filter(d=>(d.fn||0)>0||(d.amis||0)>0); return s.length ? `✅ ${s.length}/11 : ${s.map(d=>d.region).join(', ')}` : '📊 Aucune soumission.'; }
-    if (q.includes('plan d\'action')) return `📋 <b>PLAN</b><br>🔴 Contacter ${nonSoumis.length} non soumis<br>🟡 Rapport Assemblée<br>🟢 Former trésoriers`;
-    for (const d of donnees) if (q.includes(d.region.toLowerCase())) return `📊 <b>${d.region}</b> : FN=${(d.fn||0).toLocaleString()} USD | ASL=${d.totalAsl||0} (Act:${d.aslActives||0}) | Grp=${d.totalGroupements||0} | Asst=${d.totalAsst||0} (Act:${d.asstActifs||0})`;
-    return `💡 Essayez : "Diagnostic complet", "Qui a besoin d'aide ?", "Top FN", "Analyse la thésaurisation", "Plan d'action", "Parle-moi du CRB Katanga"`;
+    // DIAGNOSTIC COMPLET AVEC DÉDUCTIONS
+    if (q.includes('diagnostic') || q.includes('complet')) {
+        let rep = `📊 <b>DIAGNOSTIC COMPLET</b><br><br>`;
+        rep += `💰 FN=${totalFN.toLocaleString()} USD | Transmis=${getTaux(fnTransmis,totalFN*0.20)}% (attendu:20%)<br>`;
+        rep += `💎 Marqués=${totalMarques.toLocaleString()} | Transmis=${getTaux(marquesTransmis,totalMarques)}%<br>`;
+        rep += `🏠 Loyers=${totalLoyers.toLocaleString()} | Transmis=${getTaux(loyersTransmis,totalLoyers)}%<br>`;
+        rep += `👥 ${nbReponses}/11 répondants | ${totalAmis} amis<br>`;
+        rep += `🏛️ ASL: ${totalASL} (${getTaux(totalASLActives,totalASL)}% actives)<br>`;
+        rep += `🏘️ Grp: ${totalGrp} (${getTaux(totalGrpActifs,totalGrp)}% actifs)<br>`;
+        rep += `👤 Asst: ${totalAsst} (${getTaux(totalAsstActifs,totalAsst)}% actifs)<br><br>`;
+        
+        // DÉDUCTIONS
+        rep += `<b>🧠 DÉDUCTIONS :</b><br>`;
+        if (nonSoumis.length > 3) rep += `⚠️ Plus de ${nonSoumis.length} structures non soumis → Problème systémique de remontée.<br>`;
+        if (totalASLActives < totalASL * 0.5) rep += `⚠️ Moins de 50% d'ASL actives → Risque de baisse du FN.<br>`;
+        if (totalAsstActifs < totalAsst * 0.5) rep += `⚠️ Moins de 50% d'assistants actifs → La collecte est en danger.<br>`;
+        if (getTaux(fnTransmis,totalFN*0.20) < 50) rep += `🚨 Transmission FN très faible → Le BN risque un déficit.<br>`;
+        if (thesauriseurs.length > 2) rep += `🚨 ${thesauriseurs.length} structures thésaurisent → Audit urgent.<br>`;
+        
+        // ANTICIPATION
+        rep += `<br><b>🔮 ANTICIPATION :</b><br>`;
+        if (totalASLActives < totalASL * 0.4) rep += `Si la tendance continue, le FN pourrait baisser de 30% dans 3 mois.<br>`;
+        if (nonSoumis.length > 0) rep += `Sans relance, ces ${nonSoumis.length} structures risquent de rester inactives toute l'année.<br>`;
+        if (thesauriseurs.length > 0) rep += `Sans audit, la thésaurisation pourrait atteindre ${Math.round(thesauriseurs.length*5000).toLocaleString()} USD non transmis.<br>`;
+        
+        // CORRÉLATIONS
+        const corr = trouverCorrelations();
+        if (corr.length > 0) {
+            rep += `<br><b>🔗 CORRÉLATIONS :</b><br>`;
+            corr.forEach(c => rep += `• ${c}<br>`);
+        }
+        
+        rep += `<br><b>📋 ACTION RECOMMANDÉE :</b> ${nonSoumis.length > 0 ? 'Relancer ' + nonSoumis.length + ' structures. ' : ''}${thesauriseurs.length > 0 ? 'Auditer ' + thesauriseurs.length + ' thésauriseurs.' : 'Maintenir le suivi.'}`;
+        return rep;
+    }
+
+    // ANTICIPATION
+    if (q.includes('anticipe') || q.includes('futur') || q.includes('prévoir') || q.includes('tendance')) {
+        let rep = `🔮 <b>ANTICIPATION — 3 PROCHAINS MOIS</b><br><br>`;
+        if (totalASLActives < totalASL * 0.5) rep += `📉 Si le taux d'ASL actives reste à ${getTaux(totalASLActives,totalASL)}%, le FN pourrait chuter de 20-30%.<br>`;
+        if (nonSoumis.length > 0) rep += `📞 Sans action, ${nonSoumis.length} structures resteront silencieuses → Perte estimée : ${Math.round(nonSoumis.length * totalFN/Math.max(nbReponses,1)).toLocaleString()} USD.<br>`;
+        if (getTaux(fnTransmis,totalFN*0.20) < 50) rep += `⚠️ Le BN risque un déficit de ${Math.round(totalFN*0.20-fnTransmis).toLocaleString()} USD si la transmission ne s'améliore pas.<br>`;
+        rep += `<br>💡 <b>Recommandation :</b> Agir maintenant sur les structures inactives pour éviter la crise.`;
+        return rep;
+    }
+
+    // DÉDUCTIONS / CORRÉLATIONS
+    if (q.includes('déduis') || q.includes('corrélation') || q.includes('lien') || q.includes('cause')) {
+        let rep = `🔗 <b>ANALYSE DES CORRÉLATIONS</b><br><br>`;
+        const corr = trouverCorrelations();
+        if (corr.length === 0) rep += `Aucune corrélation significative détectée avec les données actuelles.<br>`;
+        else corr.forEach(c => rep += `• ${c}<br>`);
+        rep += `<br>💡 <b>Interprétation :</b> Les structures avec beaucoup d'ASL/assistants inactifs ont tendance à avoir un FN plus faible ou plus de thésaurisation.`;
+        return rep;
+    }
+
+    // PLAN D'ACTION
+    if (q.includes('plan') || q.includes('action') || q.includes('faire') || q.includes('semaine')) {
+        let plan = `📋 <b>PLAN D'ACTION PRIORISÉ</b><br><br>`;
+        plan += `🔴 <b>URGENT (cette semaine) :</b><br>`;
+        if (nonSoumis.length > 0) plan += `• Contacter ${nonSoumis.map(d=>d.region).join(', ')}<br>`;
+        if (thesauriseurs.length > 0) plan += `• Auditer ${thesauriseurs.map(d=>d.region).join(', ')}<br>`;
+        if (nonSoumis.length === 0 && thesauriseurs.length === 0) plan += `• ✅ Pas d'urgence critique<br>`;
+        plan += `<br>🟡 <b>IMPORTANT (ce mois) :</b><br>`;
+        plan += `• Former les ${totalAsst-totalAsstActifs} assistants inactifs<br>`;
+        plan += `• Relancer les ${totalASL-totalASLActives} ASL inactives<br>`;
+        plan += `<br>🟢 <b>FOND (trimestre) :</b><br>`;
+        plan += `• Objectif : atteindre 70% d'ASL actives<br>`;
+        plan += `• Objectif : 90% de transmission FN<br>`;
+        return plan;
+    }
+
+    // STRUCTURE SPÉCIFIQUE
+    for (const d of donnees) {
+        if (q.includes(d.region.toLowerCase())) {
+            const marques = (d.temples||0)+(d.international||0)+(d.continental||0)+(d.mausolee||0)+(d.socioEco||0);
+            const pctASL = getTaux(d.aslActives||0, d.totalAsl||0);
+            const pctAsst = getTaux(d.asstActifs||0, d.totalAsst||0);
+            const pctTrans = getTaux(d.fnTransmis||0, (d.fn||0)*0.20);
+            let analyse = `📊 <b>${d.region}</b><br>`;
+            analyse += `💰 FN=${(d.fn||0).toLocaleString()} | FD=${(d.fd||0).toLocaleString()}<br>`;
+            analyse += `🏛️ ASL=${d.totalAsl||0} (${pctASL}% actives) | Grp=${d.totalGroupements||0} | Asst=${d.totalAsst||0} (${pctAsst}% actives)<br>`;
+            analyse += `📤 Transmission FN=${pctTrans}%<br><br>`;
+            analyse += `<b>🧠 ANALYSE :</b><br>`;
+            if (pctASL < 50) analyse += `⚠️ Moins de 50% d'ASL actives → Risque de baisse du FN.<br>`;
+            if (pctAsst < 50) analyse += `⚠️ Moins de 50% d'assistants actifs → La collecte est menacée.<br>`;
+            if (pctTrans < 50) analyse += `🚨 Transmission FN très faible → Thésaurisation probable.<br>`;
+            if (pctASL >= 70 && pctTrans >= 80) analyse += `✅ Bonne performance globale.`;
+            return analyse;
+        }
+    }
+
+    // TOP / CLASSEMENT
+    if (q.includes('top') || q.includes('classement') || q.includes('meilleur')) {
+        return `🏆 <b>TOP 5 FN</b><br>${trieFN.slice(0,5).map((d,i) => `${i+1}. ${d.region}: ${(d.fn||0).toLocaleString()} USD`).join('<br>')}`;
+    }
+
+    // RÉSUMÉ
+    if (q.includes('résumé') || q.includes('global')) {
+        return `📊 ${nbReponses}/11 répondu | FN=${totalFN.toLocaleString()} USD | Trans=${getTaux(fnTransmis,totalFN*0.20)}% | ASL=${totalASL}(${getTaux(totalASLActives,totalASL)}%) | Asst=${totalAsst}(${getTaux(totalAsstActifs,totalAsst)}%) | ${nonSoumis.length} non soumis | ${thesauriseurs.length} thésaurisation`;
+    }
+
+    // AIDE
+    return `💡 <b>Je peux :</b><br>
+    📊 "Diagnostic complet" — Avec déductions et anticipations<br>
+    🔮 "Anticipe les 3 prochains mois" — Projections<br>
+    🔗 "Trouve des corrélations" — Liens entre indicateurs<br>
+    📋 "Plan d'action" — Priorités immédiates<br>
+    🏛️ "Analyse CRB Katanga" — Détail + analyse<br>
+    🏆 "Top 5 FN" — Classement<br>
+    📊 "Résumé" — En une ligne`;
 }
 </script>
 </body>
