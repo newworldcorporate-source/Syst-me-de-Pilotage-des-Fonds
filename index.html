@@ -450,8 +450,16 @@ function synchroniserGoogleSheets() {
 function resetDonnees() { if (confirm('⚠️ Remettre à zéro ?')) { localStorage.removeItem('donnees_asn'); localStorage.removeItem('base_acteurs'); location.reload(); } }
 
 function soumettreDonnees() {
+    // Vérification que currentUser est défini
+    if (!currentUser) {
+        alert('⚠️ Erreur : utilisateur non connecté. Veuillez vous reconnecter.');
+        return;
+    }
+    
     const data = {
-        region: currentUser, exercice: parseInt(document.getElementById('exercice').value) || 183, mois: document.getElementById('mois').value,
+        region: currentUser,
+        exercice: parseInt(document.getElementById('exercice').value) || 183,
+        mois: document.getElementById('mois').value,
         totalCroyants: parseInt(document.getElementById('totalCroyantsInput').value) || 0,
         amis: parseInt(document.getElementById('amisInput').value) || 0,
         totalAsl: parseInt(document.getElementById('totalAslInput').value) || 0,
@@ -473,16 +481,46 @@ function soumettreDonnees() {
         fnTransmis: parseFloat(document.getElementById('fnTransmisInput').value) || 0,
         marquesTransmis: parseFloat(document.getElementById('marquesTransmisInput').value) || 0,
         loyersTransmis: parseFloat(document.getElementById('loyersTransmisInput').value) || 0,
-        actions: parseInt(document.getElementById('actionsInput').value) || 0,
+        // CORRIGÉ : actionsInput n'existe pas → retiré
         difficultes: document.getElementById('difficultesInput').value
     };
+    
+    // Vérification : au moins un champ doit être rempli
+    const aDesDonnees = data.fn > 0 || data.fd > 0 || data.amis > 0 || data.totalCroyants > 0;
+    if (!aDesDonnees) {
+        if (!confirm('⚠️ Toutes les valeurs sont à zéro. Voulez-vous vraiment envoyer un rapport vide ?')) {
+            return;
+        }
+    }
+    
+    // Sauvegarde dans donnees
     const idx = donnees.findIndex(d => d.region === currentUser);
-    if (idx >= 0) donnees[idx] = {...donnees[idx], ...data}; else donnees.push(data);
+    if (idx >= 0) {
+        donnees[idx] = {...donnees[idx], ...data};
+    } else {
+        donnees.push(data);
+    }
+    
+    // Sauvegarde localStorage
     localStorage.setItem('donnees_asn', JSON.stringify(donnees));
-    document.getElementById('successMsg').style.display = 'block';
-    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
-    synchroniserGoogleSheets();
+    
+    // Message de confirmation
+    const successMsg = document.getElementById('successMsg');
+    successMsg.style.display = 'block';
+    successMsg.textContent = '✅ Rapport enregistré pour ' + currentUser + ' ! (' + (data.fn || 0).toLocaleString() + ' USD FN)';
+    setTimeout(() => successMsg.style.display = 'none', 4000);
+    
+    // Mise à jour de l'affichage
     afficher();
+    
+    // Synchronisation Google Sheets (avec gestion d'erreur)
+    try {
+        synchroniserGoogleSheets();
+    } catch(e) {
+        console.log('Sync Cloud différée : ', e.message);
+    }
+    
+    console.log('✅ Données sauvegardées pour', currentUser, data);
 }
 
 // BASE DE DONNÉES ACTEURS
