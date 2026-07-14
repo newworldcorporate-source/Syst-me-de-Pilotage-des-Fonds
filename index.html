@@ -148,8 +148,8 @@
                 <th onclick="trierTableau('region')">Structure ↕</th><th onclick="trierTableau('fn')">FN ↕</th><th>FD</th><th>Croyants</th><th>%Amis</th><th>ASL Tot</th><th>%ASL</th><th>Grp Tot</th><th>%Grp</th><th>Entr Tot</th><th>%Entr</th><th>FN→BN</th><th>Marq→BN</th><th>Loy→BN</th><th>Thésaur.</th>
             </tr></thead><tbody id="detailBody"></tbody></table></div>
             
-            <div class="section-title">⚠️ DIFFICULTÉS</div>
-            <div class="box"><div id="difficultesContent">Aucune difficulté signalée.</div></div>
+            <div class="section-title">💬 OBSERVATIONS</div>
+            <div class="box"><div id="difficultesContent">Aucune observation signalée.</div></div>
             <div class="section-title">📋 RECOMMANDATIONS</div>
             <div class="recommandations"><div id="decisionsContent"></div></div>
         </div>
@@ -170,6 +170,10 @@
                 <div class="card orange"><div class="value" id="monTauxEntreprises">0%</div><div class="label">📊 Taux Entreprises</div></div>
                 <div class="card blue"><div class="value" id="monTotalAsst">0</div><div class="label">Total Ass. Trésoriers</div></div>
                 <div class="card green"><div class="value" id="monAsstActifs">0</div><div class="label">Ass. Trésoriers Actifs</div></div>
+                <div class="card purple"><div class="value" id="monEduASL">0</div><div class="label">🎓 Éducation ASL</div></div>
+                <div class="card blue"><div class="value" id="monSecteurs">0</div><div class="label">🏘️ Secteurs</div></div>
+                <div class="card green"><div class="value" id="monApprofondissement">0</div><div class="label">📖 Approfond.</div></div>
+                <div class="card orange"><div class="value" id="monAutresSeances">0</div><div class="label">📚 Autres séances</div></div>
             </div>
             
             <div class="section-title">💰 FONDS COLLECTÉS</div>
@@ -213,6 +217,16 @@
                     <div class="form-group"><label>Assistants Trésoriers Actifs</label><input type="number" id="asstActifsInput" value="0"></div>
                 </div>
                 
+                <div class="section-title">🎓 ESPACES D'ÉDUCATION</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Espaces d'éducation par les ASL</label><input type="number" id="eduASLInput" value="0"></div>
+                    <div class="form-group"><label>Secteurs / Quartiers</label><input type="number" id="secteursInput" value="0"></div>
+                    <div class="form-group"><label>Séances d'approfondissement</label><input type="number" id="approfondissementInput" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Autres séances</label><input type="number" id="autresSeancesInput" value="0"></div>
+                </div>
+                
                 <div class="section-title">💰 FONDS COLLECTÉS</div>
                 <div class="form-row">
                     <div class="form-group"><label>Fonds National (USD)</label><input type="number" id="fnInput" value="0"></div>
@@ -236,9 +250,11 @@
                     <div class="form-group"><label>Loyers Transmis au BN (100%)</label><input type="number" id="loyersTransmisInput" value="0"></div>
                 </div>
                 
-                <div class="section-title">⚠️ DIFFICULTÉS</div>
+                <div class="section-title">💬 OBSERVATIONS</div>
                 <div class="form-row">
-                    <div class="form-group" style="grid-column: span 3;"><label>Difficultés rencontrées</label><input type="text" id="difficultesInput" placeholder="Décrivez les obstacles..."></div>
+                    <div class="form-group"><label>Commentaires</label><input type="text" id="commentairesInput" placeholder="Vos commentaires..."></div>
+                    <div class="form-group"><label>Suggestions</label><input type="text" id="suggestionsInput" placeholder="Vos suggestions..."></div>
+                    <div class="form-group"><label>Défis rencontrés</label><input type="text" id="defisInput" placeholder="Défis..."></div>
                 </div>
                 
                 <button class="btn-submit" onclick="soumettreDonnees()">📤 ENVOYER</button>
@@ -266,7 +282,7 @@
         <div class="box" style="max-height:300px; overflow-y:auto;">
             <table><thead><tr><th>Type</th><th>Nom</th><th>Localisation</th><th>Statut</th><th>Montant</th><th>Mois</th><th>Action</th></tr></thead><tbody id="acteursBody"></tbody></table>
         </div>
-        <button class="btn-logout" onclick="fermerBaseDonnees()" style="width:100%; margin-top:10px;">Fermer</button>
+        <button onclick="fermerBaseDonnees()" style="width:100%; margin-top:15px; padding:14px; background:#1a237e; color:white; border:none; border-radius:8px; font-size:1.1em; font-weight:bold; cursor:pointer;">❌ FERMER</button>
     </div>
 </div>
 
@@ -385,7 +401,7 @@ function afficher() {
                 <td><span class="${stClasse}">${stTexte}</span></td></tr>`;
         });
         document.getElementById('detailBody').innerHTML = detailHTML;
-        document.getElementById('difficultesContent').innerHTML = donnees.filter(d => d.difficultes && d.difficultes.trim()).length === 0 ? '<p>Aucune difficulté signalée.</p>' : donnees.filter(d => d.difficultes && d.difficultes.trim()).map(d => `<div class="difficulte-item"><strong>${d.region} :</strong> ${d.difficultes}</div>`).join('');
+        document.getElementById('difficultesContent').innerHTML = donnees.filter(d => (d.commentaires && d.commentaires.trim()) || (d.suggestions && d.suggestions.trim()) || (d.defis && d.defis.trim())).length === 0 ? '<p>Aucune observation signalée.</p>' : donnees.filter(d => (d.commentaires && d.commentaires.trim()) || (d.suggestions && d.suggestions.trim()) || (d.defis && d.defis.trim())).map(d => `<div class="difficulte-item"><strong>${d.region} :</strong><br>💬 ${d.commentaires||'-'}<br>💡 ${d.suggestions||'-'}<br>⚠️ ${d.defis||'-'}</div>`).join('');
         
         const nonSoumis = donnees.filter(d => (d.fn||0) === 0 && (d.amis||0) === 0);
         let dec = '';
@@ -417,6 +433,10 @@ function afficher() {
         document.getElementById('monMarquesTransmis').textContent = (d.marquesTransmis||0).toLocaleString()+' USD';
         document.getElementById('monLoyersTransmis').textContent = (d.loyersTransmis||0).toLocaleString()+' USD';
         document.getElementById('monThesaurisation').textContent = getTaux(Math.max(0,(d.fn||0)-(d.fnTransmis||0)-(d.fd||0)-marques+(d.marquesTransmis||0)-(d.loyers||0)+(d.loyersTransmis||0)), Math.max((d.fn||0),1))+'%';
+        document.getElementById('monEduASL').textContent = d.eduASL||0;
+        document.getElementById('monSecteurs').textContent = d.secteurs||0;
+        document.getElementById('monApprofondissement').textContent = d.approfondissement||0;
+        document.getElementById('monAutresSeances').textContent = d.autresSeances||0;
     }
 }
 
@@ -476,7 +496,13 @@ function soumettreDonnees() {
         entreprisesContrib: parseInt(document.getElementById('entreprisesContribInput').value) || 0,
         totalAsst: parseInt(document.getElementById('totalAsstInput').value) || 0,
         asstActifs: parseInt(document.getElementById('asstActifsInput').value) || 0,
-        difficultes: document.getElementById('difficultesInput').value
+        eduASL: parseInt(document.getElementById('eduASLInput').value) || 0,
+        secteurs: parseInt(document.getElementById('secteursInput').value) || 0,
+        approfondissement: parseInt(document.getElementById('approfondissementInput').value) || 0,
+        autresSeances: parseInt(document.getElementById('autresSeancesInput').value) || 0,
+        commentaires: document.getElementById('commentairesInput').value,
+        suggestions: document.getElementById('suggestionsInput').value,
+        defis: document.getElementById('defisInput').value
     };
     
     if (existant >= 0) {
